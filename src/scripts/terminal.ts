@@ -158,20 +158,62 @@ function echoCommand(raw: string) {
 // ─── Command registry ─────────────────────────────────────────────────
 const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
   help() {
+    const row = (cmd: string, desc: string) =>
+      `<div class="grid grid-cols-[140px_1fr] gap-x-3 py-[2px]"><span class="text-accent">${cmd}</span><span class="text-dim">${desc}</span></div>`;
+    const section = (title: string, rows: string) =>
+      `<div class="mt-3 first:mt-0">
+        <div class="text-mute text-[10px] uppercase tracking-widest mb-1">${title}</div>
+        ${rows}
+      </div>`;
+    const core = section(
+      'identity',
+      row('whoami', 'one-line bio') +
+        row('about', 'the longer story') +
+        row('now', 'what i\'m doing right now') +
+        row('projects', 'list things i\'ve built') +
+        row('projects &lt;n&gt;', 'open the nth project') +
+        row('uses', 'hardware &amp; tools') +
+        row('contact', 'how to reach me')
+    );
+    const shell = section(
+      'shell',
+      row('ls', 'list directory') +
+        row('pwd', 'print working dir') +
+        row('cd &lt;dir&gt;', 'not implemented (you live here)') +
+        row('cat &lt;file&gt;', 'meow') +
+        row('echo &lt;text&gt;', 'print text back') +
+        row('date', 'current time') +
+        row('clear', 'clear the scrollback') +
+        row('sudo &lt;...&gt;', 'try it') +
+        row('exit', 'try it')
+    );
+    const meta = section(
+      'meta',
+      row('theme', 'cycle themes') +
+        row('theme &lt;name&gt;', 'clay · gruvbox · paper · nord') +
+        row('help · man · ?', 'this list') +
+        row('pet', 'a hidden friend')
+    );
+    const keys = section(
+      'keys',
+      `<div class="flex flex-wrap gap-x-4 gap-y-1 text-dim text-[12px]">
+        <span><span class="kbd">↑</span> <span class="kbd">↓</span> history</span>
+        <span><span class="kbd">Tab</span> autocomplete</span>
+        <span><span class="kbd">Ctrl</span>+<span class="kbd">L</span> clear</span>
+        <span><span class="kbd">Enter</span> run</span>
+      </div>`
+    );
     return [
-      ['line', 'available commands:'],
-      ['line', '  <span class="text-accent">help</span>       show this list'],
-      ['line', '  <span class="text-accent">whoami</span>     short bio'],
-      ['line', '  <span class="text-accent">about</span>      a longer story'],
-      ['line', '  <span class="text-accent">now</span>        what i\'m doing right now'],
-      ['line', '  <span class="text-accent">projects</span>   things i\'ve built'],
-      ['line', '  <span class="text-accent">projects</span> &lt;n&gt;  open one'],
-      ['line', '  <span class="text-accent">uses</span>       hardware &amp; tools'],
-      ['line', '  <span class="text-accent">contact</span>    how to reach me'],
-      ['line', '  <span class="text-accent">theme</span>      cycle themes (clay · gruvbox · paper · nord)'],
-      ['line', '  <span class="text-accent">theme</span> &lt;name&gt; jump to a specific one'],
-      ['line', '  <span class="text-accent">cat</span>        meow'],
-      ['line', '  <span class="text-accent">ls</span>  <span class="text-accent">pwd</span>  <span class="text-accent">echo</span>  <span class="text-accent">date</span>  <span class="text-accent">clear</span>  <span class="text-accent">sudo</span>'],
+      [
+        'raw',
+        `<div class="out-card text-[13px]">
+          <h5>$ help</h5>
+          ${core}
+          ${shell}
+          ${meta}
+          ${keys}
+        </div>`,
+      ],
     ];
   },
   whoami() {
