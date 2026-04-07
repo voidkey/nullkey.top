@@ -217,7 +217,27 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
     ];
   },
   whoami() {
-    return [['line', '<span class="text-text">nullkey</span> · software engineer · shanghai']];
+    const row = (k: string, v: string) =>
+      `<div class="grid grid-cols-[90px_1fr] gap-x-3 py-[2px]"><span class="text-accent">${k}</span><span class="text-text">${v}</span></div>`;
+    return [
+      [
+        'raw',
+        `<div class="out-card text-[13px]">
+          <h5>$ whoami</h5>
+          ${row('user', 'nullkey <span class="text-mute">// 空键</span>')}
+          ${row('role', 'software engineer')}
+          ${row('focus', 'backend · ai infra · llm tooling')}
+          ${row('stack', '<span class="text-blu">go</span> · <span class="text-blu">typescript</span> · <span class="text-blu">postgres</span>')}
+          ${row('based', 'shanghai, cn')}
+          ${row('shell', 'zsh + fish (depending on the day)')}
+          ${row('uptime', `<span id="whoami-uptime">${(() => {
+            const s = Math.floor((Date.now() - startedAt) / 1000);
+            return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+          })()}</span> in this session`)}
+          <p class="font-serif italic text-text mt-3 text-[15px]">building <span class="text-accent">quiet tools</span> for loud problems.</p>
+        </div>`,
+      ],
+    ];
   },
   about() {
     return [['md', CONTENT.about]];
