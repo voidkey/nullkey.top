@@ -31,6 +31,27 @@ const CONTENT: ContentData = dataNode
 type PostMeta = { slug: string; title: string; date: string; summary: string; tags: string[] };
 const POSTS: PostMeta[] = postsNode ? JSON.parse(postsNode.textContent || '[]') : [];
 
+function openPost(p: PostMeta): Block[] {
+  setTimeout(() => {
+    window.location.href = `/posts/${p.slug}/`;
+  }, 250);
+  return [['line', `opening <span class="text-accent">${esc(p.title)}</span> ...`]];
+}
+
+function ambiguousPosts(matches: PostMeta[], needle: string): Block[] {
+  const rows = matches
+    .map(
+      (p, i) =>
+        `<div class="py-[2px]"><span class="text-mute">${String(i + 1).padStart(2, ' ')}.</span> <a href="/posts/${esc(p.slug)}/" class="text-accent">${esc(p.title)}</a> <span class="text-mute">— ${esc(p.slug)}</span></div>`
+    )
+    .join('');
+  return [
+    ['line', `<span class="text-err">ambiguous:</span> "${esc(needle)}" matches ${matches.length} posts:`],
+    ['raw', `<div class="ml-4 my-1">${rows}</div>`],
+    ['line', '<span class="text-mute">be more specific, or type </span><span class="text-accent">read &lt;n&gt;</span><span class="text-mute"> for the nth from posts list.</span>'],
+  ];
+}
+
 // startedAt is reused by whoami's uptime field
 const startedAt = Date.now();
 
@@ -352,18 +373,52 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
     ];
   },
   read(args) {
-    const slug = args[0];
-    if (!slug) {
-      return [['line', '<span class="text-err">usage:</span> read &lt;slug&gt;  <span class="text-mute">(try </span><span class="text-accent">posts</span><span class="text-mute">)</span>']];
+    if (args.length === 0) {
+      return [['line', '<span class="text-err">usage:</span> read &lt;slug | title | n&gt;  <span class="text-mute">(try </span><span class="text-accent">posts</span><span class="text-mute">)</span>']];
     }
-    const p = POSTS.find((x) => x.slug === slug);
-    if (!p) {
-      return [['line', `<span class="text-err">no such post:</span> ${esc(slug)}`]];
+
+    // Numeric index: `read 1` → latest post (1-based)
+    const asNum = parseInt(args[0]!, 10);
+    if (args.length === 1 && !isNaN(asNum) && asNum > 0 && asNum <= POSTS.length) {
+      return openPost(POSTS[asNum - 1]!);
     }
-    setTimeout(() => {
-      window.location.href = `/posts/${p.slug}/`;
-    }, 250);
-    return [['line', `opening <span class="text-accent">${esc(p.title)}</span> ...`]];
+
+    // Normalize the rest of the line into a candidate slug.
+    // Collapse spaces, drop punctuation, lowercase. So `read on quiet tools`
+    // and `read quiet-tools` and `read "On Quiet Tools"` all map to `quiet-tools`.
+    const raw = args.join(' ').toLowerCase().trim();
+    const normalize = (s: string) =>
+      s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const needle = normalize(raw);
+
+    // 1) exact slug match
+    let hit = POSTS.find((p) => p.slug === needle);
+    // 2) exact normalized-title match
+    if (!hit) hit = POSTS.find((p) => normalize(p.title) === needle);
+    // 3) needle is a prefix of a slug or title
+    if (!hit) {
+      const prefix = POSTS.filter(
+        (p) => p.slug.startsWith(needle) || normalize(p.title).startsWith(needle)
+      );
+      if (prefix.length === 1) hit = prefix[0]!;
+      else if (prefix.length > 1) return ambiguousPosts(prefix, raw);
+    }
+    // 4) needle is a substring
+    if (!hit) {
+      const sub = POSTS.filter(
+        (p) => p.slug.includes(needle) || normalize(p.title).includes(needle)
+      );
+      if (sub.length === 1) hit = sub[0]!;
+      else if (sub.length > 1) return ambiguousPosts(sub, raw);
+    }
+
+    if (!hit) {
+      return [
+        ['line', `<span class="text-err">no such post:</span> ${esc(raw)}`],
+        ['line', '<span class="text-mute">try </span><span class="text-accent">posts</span><span class="text-mute"> for the full list.</span>'],
+      ];
+    }
+    return openPost(hit);
   },
   blog() { return COMMANDS.posts!([]); },
   date() {
@@ -506,8 +561,25 @@ input.addEventListener('keydown', (e) => {
     updateCaret();
   } else if (e.key === 'Tab') {
     e.preventDefault();
-    const pre = input.value.toLowerCase();
-    if (!pre) return;
+    const raw = input.value;
+    if (!raw) return;
+    // Context-aware: after `read `, complete against post slugs
+    const readMatch = raw.match(/^(read\s+)(.*)$/i);
+    if (readMatch) {
+      const [, head, partial] = readMatch;
+      const p = (partial ?? '').toLowerCase();
+      const matches = POSTS.filter((post) => post.slug.startsWith(p));
+      if (matches.length === 1) {
+        input.value = head + matches[0]!.slug;
+        updateCaret();
+      } else if (matches.length > 1) {
+        append(`<pre class="out-line text-dim">${matches.map((m) => esc(m.slug)).join('  ')}</pre>`);
+        scrollEnd();
+      }
+      return;
+    }
+    // Default: complete command name
+    const pre = raw.toLowerCase();
     const matches = Object.keys(COMMANDS).filter((k) => k.startsWith(pre));
     if (matches.length === 1) {
       input.value = matches[0]!;
