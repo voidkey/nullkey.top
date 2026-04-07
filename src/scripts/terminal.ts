@@ -485,8 +485,6 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
 };
 COMMANDS.man = COMMANDS.help!;
 COMMANDS['?'] = COMMANDS.help!;
-// keep `projects` as a back-compat alias
-COMMANDS.projects = COMMANDS.project!;
 
 // ─── Run a command ────────────────────────────────────────────────────
 function run(raw: string) {
