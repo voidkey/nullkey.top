@@ -162,10 +162,14 @@ function renderMd(src: string): string {
   const blocks = src.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean);
   return blocks
     .map((b) => {
+      // Heading on the first line: render the heading, then recurse on the rest
+      // of the block so a list immediately under a heading still gets rendered.
       if (/^#{1,3}\s/.test(b)) {
-        const m = b.match(/^(#{1,3})\s+(.*)$/)!;
+        const m = b.match(/^(#{1,3})\s+([^\n]*)\n?([\s\S]*)$/)!;
         const lvl = m[1].length;
-        return `<h${lvl} class="text-accent text-[11px] uppercase tracking-widest mt-3 mb-1 font-medium">${inlineMd(m[2])}</h${lvl}>`;
+        const head = `<h${lvl} class="text-accent text-[11px] uppercase tracking-widest mt-3 mb-1 font-medium">${inlineMd(m[2])}</h${lvl}>`;
+        const rest = m[3].trim();
+        return rest ? head + renderMd(rest) : head;
       }
       if (/^>\s/.test(b)) {
         return `<blockquote class="border-l-2 border-accent pl-3 my-2 italic font-serif text-text">${inlineMd(b.replace(/^>\s?/gm, ''))}</blockquote>`;
@@ -294,11 +298,11 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         'raw',
         `<div class="out-card text-[13px]">
           <h5>$ whoami</h5>
-          ${row('user', 'nullkey <span class="text-mute">// 空键</span>')}
+          ${row('user', 'nullkey <span class="text-mute">// or voidkey</span>')}
           ${row('role', 'software engineer')}
-          ${row('focus', 'backend · ai infra · llm tooling')}
-          ${row('stack', '<span class="text-blu">go</span> · <span class="text-blu">typescript</span> · <span class="text-blu">postgres</span>')}
-          ${row('based', 'shanghai, cn')}
+          ${row('focus', 'backend · ai agents · llm tools')}
+          ${row('stack', '<span class="text-blu">golang</span> · <span class="text-blu">python</span> · <span class="text-blu">typescript</span>')}
+          ${row('based', 'moon, solar system')}
           ${row('shell', 'zsh + fish (depending on the day)')}
           ${row('uptime', `<span id="whoami-uptime">${(() => {
             const s = Math.floor((Date.now() - startedAt) / 1000);
