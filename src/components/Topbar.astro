@@ -48,6 +48,7 @@ const tabs = [
 <script is:inline>
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.getElementById('back-home')) {
+      e.preventDefault();
       window.location.href = '/';
     }
   });
