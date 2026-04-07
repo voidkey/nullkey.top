@@ -73,7 +73,7 @@ function setKitty(state: KittyState, holdMs = 1200) {
   // Reset sleep timer on any activity
   kittySleepTimer = window.setTimeout(() => {
     if (kittyEl!.textContent === KITTY.idle) kittyEl!.textContent = KITTY.sleepy;
-  }, 30_000);
+  }, 6_000);
 }
 
 // ─── Idle cat (empty scrollback pixel art) ────────────────────────────
