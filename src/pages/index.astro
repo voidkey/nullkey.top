@@ -3,34 +3,42 @@ import '~/styles/global.css';
 import Topbar from '~/components/Topbar.astro';
 import Hero from '~/components/Hero.astro';
 import Promptline from '~/components/Promptline.astro';
-import PanelTemplates from '~/components/PanelTemplates.astro';
-import Mascot from '~/components/Mascot.astro';
+import Statusbar from '~/components/Statusbar.astro';
+import ContentData from '~/components/ContentData.astro';
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>nullkey</title>
-    <meta name="description" content="Nullkey — software engineer in Shanghai." />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>nullkey — // terminal</title>
+    <meta name="description" content="Nullkey — software engineer in Shanghai. A terminal that doubles as a name card." />
   </head>
-  <body class="bg-bg text-text font-mono">
-    <main class="mx-auto max-w-terminal flex flex-col px-4 py-5 sm:px-8 sm:py-6" style="max-height:100svh;height:100svh;">
+  <body class="bg-bg text-text font-mono" style="--pad: clamp(14px, 3.2vw, 38px);">
+    <div class="flex flex-col h-[100dvh] w-full bg-gradient-to-b from-bg-2 to-bg">
       <Topbar />
-      <Hero />
-      <section
-        id="summon"
-        class="flex-1 overflow-y-auto scroll-thin mt-4"
+
+      <main
+        id="term"
+        class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-thin px-[var(--pad)] pt-6 pb-4"
+        style="scroll-behavior: smooth;"
         aria-live="polite"
         aria-label="terminal output"
-      ></section>
+      >
+        <div class="max-w-terminal mx-auto">
+          <Hero />
+          <div id="out"></div>
+        </div>
+      </main>
+
       <Promptline />
-    </main>
-    <PanelTemplates />
-    <Mascot />
+      <Statusbar />
+    </div>
+
+    <ContentData />
     <script>
       import '~/scripts/terminal.ts';
-      import '~/scripts/mascot.ts';
     </script>
   </body>
 </html>

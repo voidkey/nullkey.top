@@ -1,41 +1,25 @@
 import { describe, it, expect } from 'vitest';
-import { parseCommand } from './commands';
+import { tokenize } from './commands';
 
-describe('parseCommand', () => {
-  it('parses a known panel command', () => {
-    expect(parseCommand('about')).toEqual({ kind: 'panel', name: 'about' });
+describe('tokenize', () => {
+  it('splits cmd and args', () => {
+    expect(tokenize('projects 2')).toEqual({ cmd: 'projects', args: ['2'] });
   });
 
-  it('trims whitespace and ignores case', () => {
-    expect(parseCommand('  Projects  ')).toEqual({ kind: 'panel', name: 'projects' });
+  it('lowercases the command but preserves arg case', () => {
+    expect(tokenize('  ECHO Hi There  ')).toEqual({ cmd: 'echo', args: ['Hi', 'There'] });
   });
 
-  it('parses projects with index argument', () => {
-    expect(parseCommand('projects 2')).toEqual({ kind: 'panel', name: 'projects', arg: '2' });
+  it('returns empty cmd for empty input', () => {
+    expect(tokenize('')).toEqual({ cmd: '', args: [] });
+    expect(tokenize('   ')).toEqual({ cmd: '', args: [] });
   });
 
-  it('parses clear', () => {
-    expect(parseCommand('clear')).toEqual({ kind: 'clear' });
+  it('handles a single word command', () => {
+    expect(tokenize('about')).toEqual({ cmd: 'about', args: [] });
   });
 
-  it('parses help', () => {
-    expect(parseCommand('help')).toEqual({ kind: 'panel', name: 'help' });
-  });
-
-  it('parses sudo as easter egg', () => {
-    expect(parseCommand('sudo rm -rf /')).toEqual({ kind: 'easter', name: 'sudo' });
-  });
-
-  it('parses pet as easter egg', () => {
-    expect(parseCommand('pet')).toEqual({ kind: 'easter', name: 'pet' });
-  });
-
-  it('returns unknown for nonsense', () => {
-    expect(parseCommand('foobar')).toEqual({ kind: 'unknown', input: 'foobar' });
-  });
-
-  it('returns noop for empty input', () => {
-    expect(parseCommand('')).toEqual({ kind: 'noop' });
-    expect(parseCommand('   ')).toEqual({ kind: 'noop' });
+  it('collapses multiple spaces between tokens', () => {
+    expect(tokenize('echo   foo    bar')).toEqual({ cmd: 'echo', args: ['foo', 'bar'] });
   });
 });

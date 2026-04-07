@@ -1,0 +1,33 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+
+const projectsRaw = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const aboutEntry = await getEntry('about', 'about');
+const nowEntry = await getEntry('now', 'now');
+const usesEntry = await getEntry('uses', 'uses');
+
+async function renderToHtml(entry: any) {
+  if (!entry) return '';
+  const { Content } = await entry.render();
+  // Astro's render() returns a Component; we can't easily run it server-side to a string
+  // without a renderer. Use the raw markdown body and let our tiny client renderer handle it.
+  return entry.body;
+}
+
+const data = {
+  about: aboutEntry ? aboutEntry.body : '',
+  now: nowEntry ? nowEntry.body : '',
+  nowUpdated: nowEntry?.data.updated
+    ? nowEntry.data.updated.toISOString().slice(0, 10)
+    : null,
+  uses: usesEntry ? usesEntry.body : '',
+  projects: projectsRaw.map((p) => ({
+    name: p.data.name,
+    summary: p.data.summary,
+    lang: p.data.lang,
+    repo: p.data.repo ?? null,
+    body: p.body,
+  })),
+};
+---
+<script type="application/json" id="content-data" set:html={JSON.stringify(data)}></script>
