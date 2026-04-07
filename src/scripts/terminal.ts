@@ -189,10 +189,8 @@ function scrollEnd() {
 
 // ─── PS1 echo for each command ────────────────────────────────────────
 function echoCommand(raw: string) {
-  const kittyChar = kittyEl?.textContent ?? KITTY.idle;
   const html =
-    '<pre class="out-line"><span class="text-accent">' + esc(kittyChar) + '</span> ' +
-    '<span class="text-ok">nullkey</span><span class="text-mute">@</span><span class="text-accent">portal</span><span class="text-mute">:</span><span class="text-blu">~</span> <span class="text-mag">(main)</span> <span class="text-accent">❯</span> ' +
+    '<pre class="out-line"><span class="text-ok">nullkey</span><span class="text-mute">@</span><span class="text-accent">portal</span><span class="text-mute">:</span><span class="text-blu">~</span> <span class="text-mag">(main)</span> <span class="text-accent">❯</span> ' +
     esc(raw) +
     '</pre>';
   append(html);
