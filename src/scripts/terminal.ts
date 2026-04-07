@@ -8,6 +8,8 @@ const caret = document.getElementById('caret') as HTMLElement | null;
 const clockEl = document.getElementById('clock');
 const uptimeEl = document.getElementById('uptime');
 const themeNameEl = document.getElementById('theme-name');
+const kittyEl = document.getElementById('kitty');
+const idleCatEl = document.getElementById('idle-cat');
 const dataNode = document.getElementById('content-data');
 
 if (!term || !out || !input || !caret) {
@@ -42,6 +44,45 @@ function tick() {
 }
 tick();
 setInterval(tick, 1000);
+
+// ─── Clovemere — PS1 kitty state machine ──────────────────────────────
+const KITTY = {
+  idle:    '(=^･ω･^=)',
+  typing:  '(=ↀωↀ=)',
+  ok:      '(=^･o･^=)',
+  unknown: '(=>﹏<=)',
+  pet:     '(=^∇^=)',
+  sleepy:  '(=˘ω˘=)',
+  surprised: '(=⊙ω⊙=)',
+} as const;
+type KittyState = keyof typeof KITTY;
+
+let kittyResetTimer: number | null = null;
+let kittySleepTimer: number | null = null;
+
+function setKitty(state: KittyState, holdMs = 1200) {
+  if (!kittyEl) return;
+  kittyEl.textContent = KITTY[state];
+  if (kittyResetTimer) clearTimeout(kittyResetTimer);
+  if (kittySleepTimer) clearTimeout(kittySleepTimer);
+  if (state !== 'idle' && state !== 'sleepy') {
+    kittyResetTimer = window.setTimeout(() => {
+      kittyEl!.textContent = KITTY.idle;
+    }, holdMs);
+  }
+  // Reset sleep timer on any activity
+  kittySleepTimer = window.setTimeout(() => {
+    if (kittyEl!.textContent === KITTY.idle) kittyEl!.textContent = KITTY.sleepy;
+  }, 30_000);
+}
+
+// ─── Idle cat (empty scrollback pixel art) ────────────────────────────
+function showIdleCat() {
+  if (idleCatEl) idleCatEl.classList.remove('hidden');
+}
+function hideIdleCat() {
+  if (idleCatEl) idleCatEl.classList.add('hidden');
+}
 
 // ─── Theme system ─────────────────────────────────────────────────────
 const THEMES = ['clay', 'gruvbox', 'paper', 'nord'] as const;
@@ -148,8 +189,10 @@ function scrollEnd() {
 
 // ─── PS1 echo for each command ────────────────────────────────────────
 function echoCommand(raw: string) {
+  const kittyChar = kittyEl?.textContent ?? KITTY.idle;
   const html =
-    '<pre class="out-line"><span class="text-ok">nullkey</span><span class="text-mute">@</span><span class="text-accent">portal</span><span class="text-mute">:</span><span class="text-blu">~</span> <span class="text-mag">(main)</span> <span class="text-accent">❯</span> ' +
+    '<pre class="out-line"><span class="text-accent">' + esc(kittyChar) + '</span> ' +
+    '<span class="text-ok">nullkey</span><span class="text-mute">@</span><span class="text-accent">portal</span><span class="text-mute">:</span><span class="text-blu">~</span> <span class="text-mag">(main)</span> <span class="text-accent">❯</span> ' +
     esc(raw) +
     '</pre>';
   append(html);
@@ -353,6 +396,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
     out!.innerHTML = '';
     const boot = document.getElementById('boot');
     if (boot) boot.style.display = '';
+    showIdleCat();
     term!.scrollTop = 0;
     return;
   },
@@ -360,6 +404,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
     out!.innerHTML = '';
     const boot = document.getElementById('boot');
     if (boot) boot.style.display = 'none';
+    hideIdleCat();
     append('<pre class="out-line text-mute">[reset] terminal reset · scrollback wiped</pre>');
     scrollEnd();
     return;
@@ -370,6 +415,7 @@ COMMANDS['?'] = COMMANDS.help!;
 
 // ─── Run a command ────────────────────────────────────────────────────
 function run(raw: string) {
+  hideIdleCat();
   echoCommand(raw);
   const { cmd, args } = tokenize(raw);
   if (!cmd) {
@@ -381,11 +427,15 @@ function run(raw: string) {
     const result = handler(args);
     if (Array.isArray(result)) renderBlocks(result);
     else scrollEnd();
+    if (cmd === 'pet') setKitty('pet', 2000);
+    else if (cmd === 'theme') setKitty('surprised', 1500);
+    else if (cmd !== 'clear' && cmd !== 'reset') setKitty('ok');
   } else {
     append(
       `<pre class="out-line text-err">zsh: command not found: ${esc(cmd)}  <span class="text-mute">(try </span><span class="text-accent">help</span><span class="text-mute">)</span></pre>`
     );
     scrollEnd();
+    setKitty('unknown', 1500);
   }
 }
 
@@ -399,7 +449,10 @@ function updateCaret() {
   const w = Math.min(ghost.offsetWidth, input!.clientWidth);
   caret!.style.transform = `translateX(${-input!.clientWidth + w}px)`;
 }
-input.addEventListener('input', updateCaret);
+input.addEventListener('input', () => {
+  updateCaret();
+  if (input.value.length > 0) setKitty('typing', 800);
+});
 window.addEventListener('resize', updateCaret);
 new ResizeObserver(updateCaret).observe(input);
 setTimeout(updateCaret, 80);
@@ -462,3 +515,7 @@ document.addEventListener('click', (e) => {
   focusInput();
 });
 focusInput();
+
+// Show the sleeping clovemere on first load (out is empty)
+showIdleCat();
+setKitty('idle');
