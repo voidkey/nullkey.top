@@ -3,7 +3,7 @@ import { tokenize } from './commands';
 
 describe('tokenize', () => {
   it('splits cmd and args', () => {
-    expect(tokenize('projects 2')).toEqual({ cmd: 'projects', args: ['2'] });
+    expect(tokenize('project 2')).toEqual({ cmd: 'project', args: ['2'] });
   });
 
   it('lowercases the command but preserves arg case', () => {

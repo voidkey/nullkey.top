@@ -6,14 +6,6 @@ const aboutEntry = await getEntry('about', 'about');
 const nowEntry = await getEntry('now', 'now');
 const usesEntry = await getEntry('uses', 'uses');
 
-async function renderToHtml(entry: any) {
-  if (!entry) return '';
-  const { Content } = await entry.render();
-  // Astro's render() returns a Component; we can't easily run it server-side to a string
-  // without a renderer. Use the raw markdown body and let our tiny client renderer handle it.
-  return entry.body;
-}
-
 const data = {
   about: aboutEntry ? aboutEntry.body : '',
   now: nowEntry ? nowEntry.body : '',

@@ -190,8 +190,8 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       row('whoami', 'one-line bio') +
         row('about', 'the longer story') +
         row('now', 'what i\'m doing right now') +
-        row('projects', 'list things i\'ve built') +
-        row('projects &lt;n&gt;', 'open the nth project') +
+        row('project', 'list things i\'ve built') +
+        row('project &lt;n&gt;', 'open the nth project') +
         row('uses', 'hardware &amp; tools') +
         row('contact', 'how to reach me')
     );
@@ -262,7 +262,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
             const s = Math.floor((Date.now() - startedAt) / 1000);
             return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
           })()}</span> in this session`)}
-          <p class="font-serif italic text-text mt-3 text-[15px]">building <span class="text-accent">quiet tools</span> for loud problems.</p>
+          <p class="font-serif italic text-text mt-3 text-[15px]"><span class="text-accent">facta non verba</span> — deeds, not words.</p>
         </div>`,
       ],
     ];
@@ -279,7 +279,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
   uses() {
     return [['md', CONTENT.uses]];
   },
-  projects(args) {
+  project(args) {
     if (args[0]) {
       const n = parseInt(args[0], 10);
       const p = CONTENT.projects[n - 1];
@@ -291,7 +291,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         [
           'raw',
           `<div class="out-card text-[13px]">
-            <h5>$ projects/${esc(p.name)}</h5>
+            <h5>$ project/${esc(p.name)}</h5>
             <p class="text-mute text-[11px]"><span class="text-accent">${esc(p.lang)}</span> · ${repoHtml}</p>
             <p class="text-text my-1">${esc(p.summary)}</p>
             ${renderMd(p.body)}
@@ -313,8 +313,8 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       })
       .join('');
     return [
-      ['raw', `<div class="out-card text-[13px]"><h5>$ projects — ${CONTENT.projects.length} results</h5>${rows}</div>`],
-      ['line', '<span class="text-mute">→ </span><span class="text-accent">projects &lt;n&gt;</span><span class="text-mute"> to open one</span>'],
+      ['raw', `<div class="out-card text-[13px]"><h5>$ project — ${CONTENT.projects.length} results</h5>${rows}</div>`],
+      ['line', '<span class="text-mute">→ </span><span class="text-accent">project &lt;n&gt;</span><span class="text-mute"> to open one</span>'],
     ];
   },
   contact() {
@@ -324,9 +324,9 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         `<div class="out-card text-[13px]">
           <h5>$ contact</h5>
           <div class="grid grid-cols-[80px_1fr] gap-x-4 gap-y-1">
-            <span class="text-accent">github</span><a href="https://github.com/nullkey">github.com/nullkey</a>
-            <span class="text-accent">x</span><a href="https://x.com/nullkey">@nullkey</a>
-            <span class="text-accent">email</span><a href="mailto:hi@nullkey.dev">hi@nullkey.dev</a>
+            <span class="text-accent">github</span><a href="https://github.com/voidkey">github.com/voidkey</a>
+            <span class="text-accent">site</span><a href="https://nullkey.top">nullkey.top</a>
+            <span class="text-accent">email</span><a href="mailto:hi@nullkey.top">hi@nullkey.top</a>
           </div>
         </div>`,
       ],
@@ -429,7 +429,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
   },
   ls() {
     return [
-      ['line', '<span class="text-blu">about/</span>  <span class="text-blu">projects/</span>  <span class="text-blu">uses/</span>  contact.txt  cat.gif'],
+      ['line', '<span class="text-blu">about/</span>  <span class="text-blu">project/</span>  <span class="text-blu">uses/</span>  contact.txt  cat.gif'],
     ];
   },
   pwd() {
@@ -485,6 +485,8 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
 };
 COMMANDS.man = COMMANDS.help!;
 COMMANDS['?'] = COMMANDS.help!;
+// keep `projects` as a back-compat alias
+COMMANDS.projects = COMMANDS.project!;
 
 // ─── Run a command ────────────────────────────────────────────────────
 function run(raw: string) {
