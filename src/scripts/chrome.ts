@@ -1,9 +1,28 @@
-// Loaded on every page. Handles clock, uptime, theme persistence.
+// Loaded on every page. Handles clock, uptime, theme persistence,
+// and the topbar theme switcher.
 // Terminal-only behavior lives in terminal.ts.
 
-import { restoreTheme } from '~/lib/theme';
+import { applyTheme, restoreTheme, currentTheme, type Theme } from '~/lib/theme';
 
 restoreTheme();
+
+// ─── Theme switcher buttons (in topbar) ────────────────────────────────
+function syncSwitcher() {
+  const active = currentTheme();
+  document.querySelectorAll<HTMLButtonElement>('#theme-switcher .theme-dot').forEach((btn) => {
+    btn.dataset.active = btn.dataset.theme === active ? 'true' : 'false';
+  });
+}
+syncSwitcher();
+
+document.querySelectorAll<HTMLButtonElement>('#theme-switcher .theme-dot').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.theme as Theme | undefined;
+    if (!name) return;
+    applyTheme(name);
+    syncSwitcher();
+  });
+});
 
 const clockEl = document.getElementById('clock');
 const uptimeEl = document.getElementById('uptime');

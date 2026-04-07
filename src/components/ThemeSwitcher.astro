@@ -1,0 +1,41 @@
+---
+const SWATCHES = [
+  { name: 'clay',    color: '#cc7755', label: 'clay'    },
+  { name: 'gruvbox', color: '#fe8019', label: 'gruvbox' },
+  { name: 'paper',   color: '#f1ead8', label: 'paper'   },
+  { name: 'nord',    color: '#88c0d0', label: 'nord'    },
+];
+---
+<div class="seg flex items-center gap-1.5" id="theme-switcher" style="border-right:none;">
+  {SWATCHES.map((s) => (
+    <button
+      type="button"
+      data-theme={s.name}
+      title={s.label}
+      aria-label={`switch to ${s.label} theme`}
+      class="theme-dot"
+      style={`--dot:${s.color};`}
+    ></button>
+  ))}
+</div>
+
+<style>
+  .theme-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--dot);
+    border: 1px solid var(--c-border);
+    padding: 0;
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+    flex: none;
+  }
+  .theme-dot:hover {
+    transform: scale(1.15);
+  }
+  .theme-dot[data-active="true"] {
+    box-shadow: 0 0 0 2px var(--c-bg-2), 0 0 0 3px var(--dot);
+    transform: scale(1.05);
+  }
+</style>

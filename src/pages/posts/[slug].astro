@@ -3,18 +3,30 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import PostLayout from '~/layouts/PostLayout.astro';
 
 export async function getStaticPaths() {
-  const all = await getCollection('posts');
-  const visible = all.filter((p) => !p.data.draft || import.meta.env.DEV);
-  return visible.map((post) => ({
+  const all = (await getCollection('posts'))
+    .filter((p) => !p.data.draft || import.meta.env.DEV)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+  return all.map((post, i) => ({
     params: { slug: post.slug },
-    props: { post },
+    props: {
+      post,
+      // newer = previous in chronological reading (the one above in the list)
+      prev: i > 0 ? all[i - 1] : null,
+      // older = next
+      next: i < all.length - 1 ? all[i + 1] : null,
+    },
   }));
 }
 
-interface Props { post: CollectionEntry<'posts'>; }
-const { post } = Astro.props;
+interface Props {
+  post: CollectionEntry<'posts'>;
+  prev: CollectionEntry<'posts'> | null;
+  next: CollectionEntry<'posts'> | null;
+}
+const { post, prev, next } = Astro.props;
 
 const wordCount = post.body.split(/\s+/).filter(Boolean).length;
 const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 ---
-<PostLayout post={post} readingTime={readingTime} wordCount={wordCount} />
+<PostLayout post={post} prev={prev} next={next} readingTime={readingTime} wordCount={wordCount} />

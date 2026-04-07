@@ -1,4 +1,6 @@
 ---
+import ThemeSwitcher from '~/components/ThemeSwitcher.astro';
+
 export interface Props {
   mode?: 'home' | 'posts' | 'reading';
   breadcrumb?: string;
@@ -29,18 +31,18 @@ const tabs = [
       <span class="text-mute">›</span><span class="text-text truncate">{breadcrumb}</span>
     </div>
   )}
-  <div class="seg flex-1 justify-end gap-3" style="border-right:none;">
+  <div class="seg flex-1 justify-end gap-3">
     {showBack && (
       <a href="/" class="text-accent hover:text-text transition-colors" style="text-decoration:none;" id="back-home">
         ❮ esc · back
       </a>
     )}
-    <span class="hidden sm:inline-flex items-center gap-1.5">
+    <span class="hidden md:inline-flex items-center gap-1.5">
       <span class="pulse-dot"></span>online
     </span>
-    <span class="hidden md:inline">utf-8</span>
     <span id="clock" class="text-dim">--:--</span>
   </div>
+  <ThemeSwitcher />
 </header>
 
 {showBack && (

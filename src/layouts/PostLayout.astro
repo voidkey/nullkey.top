@@ -4,11 +4,13 @@ import type { CollectionEntry } from 'astro:content';
 
 export interface Props {
   post: CollectionEntry<'posts'>;
+  prev: CollectionEntry<'posts'> | null;
+  next: CollectionEntry<'posts'> | null;
   readingTime: number;
   wordCount: number;
 }
 
-const { post, readingTime, wordCount } = Astro.props;
+const { post, prev, next, readingTime, wordCount } = Astro.props;
 const { Content } = await post.render();
 const dateStr = post.data.date.toISOString().slice(0, 10);
 ---
@@ -47,7 +49,25 @@ const dateStr = post.data.date.toISOString().slice(0, 10);
 
       <footer class="post-end">
         <p>∎</p>
-        <p class="mt-2"><a href="/posts/" class="text-accent">❮ all posts</a> · <a href="/" class="text-accent">home</a></p>
+
+        {(prev || next) && (
+          <nav class="post-nav">
+            {prev ? (
+              <a href={`/posts/${prev.slug}/`} class="post-nav-link prev">
+                <span class="post-nav-label">❮ newer</span>
+                <span class="post-nav-title">{prev.data.title}</span>
+              </a>
+            ) : <span></span>}
+            {next ? (
+              <a href={`/posts/${next.slug}/`} class="post-nav-link next">
+                <span class="post-nav-label">older ❯</span>
+                <span class="post-nav-title">{next.data.title}</span>
+              </a>
+            ) : <span></span>}
+          </nav>
+        )}
+
+        <p class="mt-6"><a href="/posts/" class="text-accent">❮ all posts</a> · <a href="/" class="text-accent">home</a></p>
       </footer>
     </article>
   </main>
@@ -157,6 +177,46 @@ const dateStr = post.data.date.toISOString().slice(0, 10);
     text-align: center;
   }
   .post-end a { color: var(--c-accent); }
+
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 1.6em 0 0;
+    text-align: left;
+  }
+  @media (max-width: 560px) {
+    .post-nav { grid-template-columns: 1fr; }
+  }
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px dashed var(--c-border);
+    border-radius: 4px;
+    color: var(--c-text) !important;
+    font-family: 'JetBrains Mono', monospace;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .post-nav-link:hover {
+    border-color: var(--c-accent);
+    background: var(--c-bg-raised);
+  }
+  .post-nav-link.next { text-align: right; }
+  .post-nav-label {
+    font-size: 11px;
+    color: var(--c-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .post-nav-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--c-text);
+    line-height: 1.25;
+  }
 
   /* Reduce CRT scanlines on reading pages so prose stays legible */
   body:has(.post-doc)::before {
