@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+
+const all = (await getCollection('posts'))
+  .filter((p) => !p.data.draft || import.meta.env.DEV)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const data = all.map((p) => ({
+  slug: p.slug,
+  title: p.data.title,
+  date: p.data.date.toISOString().slice(0, 10),
+  summary: p.data.summary,
+  tags: p.data.tags,
+}));
+---
+<script type="application/json" id="posts-data" set:html={JSON.stringify(data)}></script>

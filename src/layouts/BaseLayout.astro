@@ -1,0 +1,77 @@
+---
+import '~/styles/global.css';
+import Topbar from '~/components/Topbar.astro';
+import Statusbar from '~/components/Statusbar.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+  mode?: 'home' | 'posts' | 'reading';
+  breadcrumb?: string;     // path shown in topbar (e.g. ~/posts/quiet-tools.md)
+  status?: string;         // status text in left of statusbar (READY / READING / BROWSING)
+  statusRight?: string;    // optional right-side status (e.g. "4 min · 832 words")
+  showBack?: boolean;      // show ❮ esc · back link in topbar
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = 'Nullkey — software engineer in Shanghai. A terminal that doubles as a name card.',
+  mode = 'home',
+  breadcrumb,
+  status,
+  statusRight,
+  showBack = false,
+  ogImage,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://nullkey.top');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.toString()} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={mode === 'reading' ? 'article' : 'website'} />
+    <meta property="og:url" content={canonical.toString()} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="alternate" type="application/rss+xml" title="nullkey" href="/rss.xml" />
+
+    <!-- Restore theme before paint to avoid flash. -->
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem('nullkey-theme');
+          var THEMES = ['clay', 'gruvbox', 'paper', 'nord'];
+          var name = THEMES.indexOf(saved) >= 0 ? saved : 'clay';
+          document.documentElement.classList.add('theme-' + name);
+        } catch (e) {
+          document.documentElement.classList.add('theme-clay');
+        }
+      })();
+    </script>
+  </head>
+
+  <body class="bg-bg text-text font-mono" style="--pad: clamp(14px, 3.2vw, 38px);">
+    <div class="flex flex-col h-[100dvh] w-full bg-gradient-to-b from-bg-2 to-bg">
+      <Topbar mode={mode} breadcrumb={breadcrumb} showBack={showBack} />
+
+      <slot />
+
+      <Statusbar status={status} statusRight={statusRight} mode={mode} />
+    </div>
+
+    <script>
+      import '~/scripts/chrome.ts';
+    </script>
+  </body>
+</html>

@@ -1,27 +1,52 @@
 ---
+export interface Props {
+  mode?: 'home' | 'posts' | 'reading';
+  breadcrumb?: string;
+  showBack?: boolean;
+}
+const { mode = 'home', breadcrumb, showBack = false } = Astro.props;
+
+const tabs = [
+  { id: 0, label: 'home',     href: '/',       active: mode === 'home' },
+  { id: 1, label: 'posts',    href: '/posts/', active: mode === 'posts' || mode === 'reading' },
+];
 ---
-<header class="flex-none flex items-stretch border-b border-border bg-bg-2 text-[11px] tracking-wider z-[5]">
-  <div class="seg lead">
+<header class="flex-none flex items-stretch border-b border-border bg-bg-2 text-[11px] tracking-wider z-[5] overflow-x-auto">
+  <a href="/" class="seg lead hover:bg-bg-raised transition-colors" style="text-decoration:none;">
     <span class="text-accent italic font-serif text-[13px] leading-none">/</span><b>nullkey</b>
-  </div>
-  <div class="seg hidden sm:flex">
-    <span class="text-mute">[0]</span><span class="text-text">home</span>
-  </div>
-  <div class="seg hidden sm:flex">
-    <span class="text-mute">[1]</span>projects
-  </div>
-  <div class="seg hidden md:flex">
-    <span class="text-mute">[2]</span>now
-  </div>
-  <div class="seg hidden md:flex">
-    <span class="text-mute">[3]</span>uses
-  </div>
-  <div class="seg flex-1 justify-end" style="border-right:none;">
-    <span class="hidden sm:inline-flex items-center gap-1.5 mr-3">
+  </a>
+  {tabs.map((t) => (
+    <a
+      href={t.href}
+      class={`seg hidden sm:flex hover:text-text transition-colors ${t.active ? 'text-text' : ''}`}
+      style="text-decoration:none;"
+    >
+      <span class="text-mute">[{t.id}]</span>{t.label}
+    </a>
+  ))}
+  {breadcrumb && (
+    <div class="seg hidden md:flex text-dim truncate max-w-[36ch]">
+      <span class="text-mute">›</span><span class="text-text truncate">{breadcrumb}</span>
+    </div>
+  )}
+  <div class="seg flex-1 justify-end gap-3" style="border-right:none;">
+    {showBack && (
+      <a href="/" class="text-accent hover:text-text transition-colors" style="text-decoration:none;" id="back-home">
+        ❮ esc · back
+      </a>
+    )}
+    <span class="hidden sm:inline-flex items-center gap-1.5">
       <span class="pulse-dot"></span>online
     </span>
-    <span class="hidden sm:inline mr-3">tty <b>s001</b></span>
-    <span class="hidden md:inline mr-3">utf-8</span>
+    <span class="hidden md:inline">utf-8</span>
     <span id="clock" class="text-dim">--:--</span>
   </div>
 </header>
+
+{showBack && (
+  <script is:inline>
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') window.location.href = '/';
+    });
+  </script>
+)}

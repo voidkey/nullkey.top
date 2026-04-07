@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+
+const all = (await getCollection('posts'))
+  .filter((p) => !p.data.draft || import.meta.env.DEV)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<BaseLayout
+  title="posts — nullkey"
+  description="Essays and notes by nullkey."
+  mode="posts"
+  breadcrumb="~/posts"
+  status="BROWSING"
+  showBack
+>
+  <main
+    class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-thin px-[var(--pad)] py-10 sm:py-16"
+    aria-label="post list"
+  >
+    <div class="mx-auto" style="max-width:680px;">
+      <header class="mb-8">
+        <h1 class="font-serif font-bold tracking-tight text-text" style="font-size:clamp(40px,6vw,64px);line-height:0.9;letter-spacing:-0.03em;">
+          <span class="text-accent italic">/</span>posts<span class="text-accent">.</span>
+        </h1>
+        <p class="text-dim text-[12px] mt-3 font-mono">
+          {all.length} {all.length === 1 ? 'entry' : 'entries'} · <a href="/rss.xml" class="text-accent">rss</a>
+        </p>
+      </header>
+
+      <ul class="list-none p-0 m-0 space-y-1">
+        {all.map((p) => (
+          <li>
+            <a
+              href={`/posts/${p.slug}/`}
+              class="grid grid-cols-[100px_1fr] sm:grid-cols-[110px_1fr_auto] gap-x-4 gap-y-1 py-3 px-3 rounded-sm border border-dashed border-transparent hover:border-border hover:bg-bg-raised transition-colors group"
+              style="text-decoration:none;"
+            >
+              <span class="text-mute text-[12px] font-mono">{p.data.date.toISOString().slice(0, 10)}</span>
+              <div class="min-w-0">
+                <div class="text-text group-hover:text-accent transition-colors font-mono text-[14px]">
+                  <span class="text-accent">›</span> {p.data.title}
+                </div>
+                <div class="text-dim text-[12px] mt-1 font-mono">{p.data.summary}</div>
+              </div>
+              <span class="text-accent text-[11px] font-mono hidden sm:block self-start mt-[2px]">
+                {p.data.tags.join(' · ')}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      {all.length === 0 && (
+        <p class="text-mute text-center py-10 font-mono">no posts yet.</p>
+      )}
+    </div>
+  </main>
+</BaseLayout>

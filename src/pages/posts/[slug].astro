@@ -1,0 +1,20 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import PostLayout from '~/layouts/PostLayout.astro';
+
+export async function getStaticPaths() {
+  const all = await getCollection('posts');
+  const visible = all.filter((p) => !p.data.draft || import.meta.env.DEV);
+  return visible.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props { post: CollectionEntry<'posts'>; }
+const { post } = Astro.props;
+
+const wordCount = post.body.split(/\s+/).filter(Boolean).length;
+const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+---
+<PostLayout post={post} readingTime={readingTime} wordCount={wordCount} />

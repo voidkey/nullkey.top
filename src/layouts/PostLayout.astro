@@ -1,0 +1,170 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  post: CollectionEntry<'posts'>;
+  readingTime: number;
+  wordCount: number;
+}
+
+const { post, readingTime, wordCount } = Astro.props;
+const { Content } = await post.render();
+const dateStr = post.data.date.toISOString().slice(0, 10);
+---
+<BaseLayout
+  title={`${post.data.title} — nullkey`}
+  description={post.data.summary}
+  mode="reading"
+  breadcrumb={`~/posts/${post.slug}.md`}
+  status="READING"
+  statusRight={`${readingTime} min · ${wordCount} words`}
+  showBack
+>
+  <main
+    class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-thin px-[var(--pad)] py-10 sm:py-16"
+    aria-label="article"
+  >
+    <article class="post-doc mx-auto" style="max-width:680px;">
+      <header class="mb-10">
+        <h1 class="post-title">{post.data.title}</h1>
+        <p class="post-meta">
+          <span class="text-accent">{dateStr}</span>
+          <span class="text-mute"> · </span>
+          <span>{readingTime} min read</span>
+          {post.data.tags.length > 0 && (
+            <>
+              <span class="text-mute"> · </span>
+              <span>{post.data.tags.join(' · ')}</span>
+            </>
+          )}
+        </p>
+      </header>
+
+      <div class="post-body">
+        <Content />
+      </div>
+
+      <footer class="post-end">
+        <p>∎</p>
+        <p class="mt-2"><a href="/posts/" class="text-accent">❮ all posts</a> · <a href="/" class="text-accent">home</a></p>
+      </footer>
+    </article>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  /* ─── Article reading typography ──────────────────────────────────── */
+  .post-doc {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    color: var(--c-text);
+  }
+
+  .post-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(36px, 5.5vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.4em;
+    color: var(--c-text);
+  }
+
+  .post-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--c-mute);
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+
+  .post-body {
+    font-size: clamp(17px, 1.7vw, 19px);
+    line-height: 1.75;
+  }
+  .post-body p { margin: 0 0 1.1em; }
+  .post-body h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.55em;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 2em 0 0.5em;
+    color: var(--c-text);
+  }
+  .post-body h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.2em;
+    margin: 1.7em 0 0.4em;
+    color: var(--c-text);
+  }
+  .post-body a {
+    color: var(--c-accent);
+    border-bottom: 1px solid color-mix(in srgb, var(--c-accent) 40%, transparent);
+  }
+  .post-body a:hover { border-bottom-color: var(--c-accent); }
+  .post-body strong { color: var(--c-text); font-weight: 700; }
+  .post-body em { font-style: italic; color: var(--c-accent); }
+  .post-body blockquote {
+    margin: 1.4em 0;
+    padding: 0.2em 0 0.2em 1.2em;
+    border-left: 2px solid var(--c-accent);
+    color: var(--c-dim);
+    font-style: italic;
+  }
+  .post-body ul, .post-body ol { margin: 0 0 1.1em; padding-left: 1.5em; }
+  .post-body li { margin: 0.3em 0; }
+  .post-body hr {
+    border: none;
+    border-top: 1px dashed var(--c-border);
+    margin: 2.4em 0;
+  }
+  .post-body code:not(pre code) {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--c-bg-raised);
+    color: var(--c-accent);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .post-body pre {
+    background: var(--c-bg-raised) !important;
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    margin: 1.4em 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .post-body pre code {
+    background: none !important;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .post-end {
+    margin-top: 4em;
+    padding-top: 1.6em;
+    border-top: 1px dashed var(--c-border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--c-mute);
+    text-align: center;
+  }
+  .post-end a { color: var(--c-accent); }
+
+  /* Reduce CRT scanlines on reading pages so prose stays legible */
+  body:has(.post-doc)::before {
+    background:
+      radial-gradient(ellipse at center, transparent 65%, var(--c-vignette) 100%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 4px);
+  }
+  body:has(.post-doc)::after {
+    opacity: calc(var(--c-noise-opacity) * 0.55);
+  }
+</style>

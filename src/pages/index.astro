@@ -1,52 +1,41 @@
 ---
-import '~/styles/global.css';
-import Topbar from '~/components/Topbar.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
 import Hero from '~/components/Hero.astro';
 import Promptline from '~/components/Promptline.astro';
-import Statusbar from '~/components/Statusbar.astro';
 import ContentData from '~/components/ContentData.astro';
+import PostsData from '~/components/PostsData.astro';
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="color-scheme" content="dark" />
-    <title>nullkey — // terminal</title>
-    <meta name="description" content="Nullkey — software engineer in Shanghai. A terminal that doubles as a name card." />
-  </head>
-  <body class="bg-bg text-text font-mono" style="--pad: clamp(14px, 3.2vw, 38px);">
-    <div class="flex flex-col h-[100dvh] w-full bg-gradient-to-b from-bg-2 to-bg">
-      <Topbar />
-
-      <main
-        id="term"
-        class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-thin px-[var(--pad)] pt-6 pb-4"
-        style="scroll-behavior: smooth;"
-        aria-live="polite"
-        aria-label="terminal output"
-      >
-        <div class="max-w-terminal mx-auto">
-          <Hero />
-          <div id="out"></div>
-          <div id="idle-cat" class="hidden text-center my-10 select-none">
-            <pre class="out-line text-accent inline-block text-left leading-[1.1] text-[14px]" aria-hidden="true">          |\      _,,,---,,_
+<BaseLayout
+  title="nullkey — // terminal"
+  mode="home"
+  status="READY"
+>
+  <main
+    id="term"
+    class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-thin px-[var(--pad)] pt-6 pb-4"
+    style="scroll-behavior: smooth;"
+    aria-live="polite"
+    aria-label="terminal output"
+  >
+    <div class="max-w-terminal mx-auto">
+      <Hero />
+      <div id="out"></div>
+      <div id="idle-cat" class="hidden text-center my-10 select-none">
+        <pre class="out-line text-accent inline-block text-left leading-[1.1] text-[14px]" aria-hidden="true">          |\      _,,,---,,_
    ZZZzz  /,`.-'`'    -.  ;-;;,_
          |,4-  ) )-,_. ,\ (  `'-'
         '---''(_/--'  `-'\_)</pre>
-            <div class="text-mute text-[12px] mt-4 italic">*clovemere is purring*</div>
-            <div class="text-mute text-[11px] mt-1">type a command to wake her  ·  <span class="text-accent">help</span> for the menu</div>
-          </div>
-        </div>
-      </main>
-
-      <Promptline />
-      <Statusbar />
+        <div class="text-mute text-[12px] mt-4 italic">*clovemere is purring*</div>
+        <div class="text-mute text-[11px] mt-1">type a command to wake her  ·  <span class="text-accent">help</span> for the menu</div>
+      </div>
     </div>
+  </main>
 
-    <ContentData />
-    <script>
-      import '~/scripts/terminal.ts';
-    </script>
-  </body>
-</html>
+  <Promptline />
+
+  <ContentData />
+  <PostsData />
+  <script>
+    import '~/scripts/terminal.ts';
+  </script>
+</BaseLayout>

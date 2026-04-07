@@ -1,12 +1,24 @@
 ---
+export interface Props {
+  status?: string;
+  statusRight?: string;
+  mode?: 'home' | 'posts' | 'reading';
+}
+const { status = 'READY', statusRight, mode = 'home' } = Astro.props;
 ---
-<footer class="flex-none flex items-stretch border-t border-border text-[11px] tracking-wide" style="padding-bottom:env(safe-area-inset-bottom);">
+<footer class="flex-none flex items-stretch border-t border-border text-[11px] tracking-wide overflow-x-auto" style="padding-bottom:env(safe-area-inset-bottom);">
   <div class="seg lead">
-    <span class="pulse-dot"></span><b>READY</b>
+    <span class="pulse-dot"></span><b>{status}</b>
   </div>
-  <div class="seg">~/home</div>
-  <div class="seg hidden sm:flex">main</div>
-  <div class="seg">zsh</div>
+  {mode === 'reading' && statusRight ? (
+    <div class="seg text-dim hidden sm:flex">{statusRight}</div>
+  ) : (
+    <>
+      <div class="seg">~/{mode === 'posts' || mode === 'reading' ? 'posts' : 'home'}</div>
+      <div class="seg hidden sm:flex">main</div>
+      <div class="seg">zsh</div>
+    </>
+  )}
   <div class="seg flex-1" style="border-right:none;"></div>
   <div class="seg hidden md:flex">theme: <b id="theme-name">clay</b></div>
   <div class="seg hidden sm:flex">utf-8</div>

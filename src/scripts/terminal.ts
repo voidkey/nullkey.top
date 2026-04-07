@@ -1,16 +1,15 @@
 import { tokenize } from '~/lib/commands';
+import { THEMES, applyTheme, currentTheme, type Theme } from '~/lib/theme';
 
 // ─── DOM refs ──────────────────────────────────────────────────────────
 const term = document.getElementById('term') as HTMLElement | null;
 const out = document.getElementById('out') as HTMLElement | null;
 const input = document.getElementById('terminal-input') as HTMLInputElement | null;
 const caret = document.getElementById('caret') as HTMLElement | null;
-const clockEl = document.getElementById('clock');
-const uptimeEl = document.getElementById('uptime');
-const themeNameEl = document.getElementById('theme-name');
 const kittyEl = document.getElementById('kitty');
 const idleCatEl = document.getElementById('idle-cat');
 const dataNode = document.getElementById('content-data');
+const postsNode = document.getElementById('posts-data');
 
 if (!term || !out || !input || !caret) {
   throw new Error('terminal: missing required nodes');
@@ -29,21 +28,11 @@ const CONTENT: ContentData = dataNode
   ? JSON.parse(dataNode.textContent || '{}')
   : { about: '', now: '', nowUpdated: null, uses: '', projects: [] };
 
-// ─── Clock / uptime in topbar + statusbar ─────────────────────────────
+type PostMeta = { slug: string; title: string; date: string; summary: string; tags: string[] };
+const POSTS: PostMeta[] = postsNode ? JSON.parse(postsNode.textContent || '[]') : [];
+
+// startedAt is reused by whoami's uptime field
 const startedAt = Date.now();
-function tick() {
-  const d = new Date();
-  if (clockEl) {
-    clockEl.textContent =
-      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-  }
-  if (uptimeEl) {
-    const s = Math.floor((Date.now() - startedAt) / 1000);
-    uptimeEl.textContent = s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
-  }
-}
-tick();
-setInterval(tick, 1000);
 
 // ─── Clovemere — PS1 kitty state machine ──────────────────────────────
 const KITTY = {
@@ -84,38 +73,7 @@ function hideIdleCat() {
   if (idleCatEl) idleCatEl.classList.add('hidden');
 }
 
-// ─── Theme system ─────────────────────────────────────────────────────
-const THEMES = ['clay', 'gruvbox', 'paper', 'nord'] as const;
-type Theme = typeof THEMES[number];
-const THEME_KEY = 'nullkey-theme';
-
-function applyTheme(name: Theme) {
-  const html = document.documentElement;
-  THEMES.forEach((t) => html.classList.remove(`theme-${t}`));
-  html.classList.add(`theme-${name}`);
-  if (themeNameEl) themeNameEl.textContent = name;
-  try {
-    localStorage.setItem(THEME_KEY, name);
-  } catch {}
-}
-
-function currentTheme(): Theme {
-  const html = document.documentElement;
-  for (const t of THEMES) if (html.classList.contains(`theme-${t}`)) return t;
-  return 'clay';
-}
-
-// Restore from localStorage on boot
-try {
-  const saved = localStorage.getItem(THEME_KEY);
-  if (saved && (THEMES as readonly string[]).includes(saved)) {
-    applyTheme(saved as Theme);
-  } else {
-    applyTheme('clay');
-  }
-} catch {
-  applyTheme('clay');
-}
+// Theme is restored by chrome.ts (loaded by BaseLayout) before this runs.
 
 // ─── Helpers: escape + tiny markdown ──────────────────────────────────
 function esc(s: string): string {
@@ -216,6 +174,12 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         row('uses', 'hardware &amp; tools') +
         row('contact', 'how to reach me')
     );
+    const writing = section(
+      'writing',
+      row('posts', 'list all blog posts') +
+        row('latest', 'most recent post') +
+        row('read &lt;slug&gt;', 'open a post')
+    );
     const shell = section(
       'shell',
       row('ls', 'list directory') +
@@ -251,6 +215,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         `<div class="out-card text-[13px]">
           <h5>$ help</h5>
           ${core}
+          ${writing}
           ${shell}
           ${meta}
           ${keys}
@@ -346,6 +311,61 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       ],
     ];
   },
+  posts() {
+    if (POSTS.length === 0) {
+      return [['line', '<span class="text-mute">no posts yet. check back soon.</span>']];
+    }
+    const rows = POSTS.map((p) => {
+      return `<a href="/posts/${esc(p.slug)}/" class="grid grid-cols-[100px_1fr] sm:grid-cols-[100px_1fr_auto] gap-x-3 gap-y-1 py-2 px-1 border-b border-dashed border-border last:border-b-0 hover:bg-bg-raised transition-colors group" style="text-decoration:none;">
+        <span class="text-mute text-[11px]">${esc(p.date)}</span>
+        <div class="min-w-0">
+          <div class="text-text group-hover:text-accent transition-colors"><span class="text-accent">›</span> ${esc(p.title)}</div>
+          <div class="text-dim text-[11px] mt-[2px]">${esc(p.summary)}</div>
+        </div>
+        <span class="text-accent text-[11px] hidden sm:block self-start mt-[3px]">${esc(p.tags.join(' · '))}</span>
+      </a>`;
+    }).join('');
+    return [
+      [
+        'raw',
+        `<div class="out-card text-[13px]">
+          <h5>$ posts — ${POSTS.length} entries</h5>
+          ${rows}
+        </div>`,
+      ],
+      ['line', '<span class="text-mute">→ </span><span class="text-accent">read &lt;slug&gt;</span><span class="text-mute"> to open · or click a row · </span><a href="/rss.xml" class="text-accent">rss</a>'],
+    ];
+  },
+  latest() {
+    const p = POSTS[0];
+    if (!p) return [['line', '<span class="text-mute">no posts yet.</span>']];
+    return [
+      [
+        'raw',
+        `<div class="out-card text-[13px]">
+          <h5>$ latest</h5>
+          <p class="text-mute text-[11px]">${esc(p.date)} · ${esc(p.tags.join(' · '))}</p>
+          <p class="text-text my-1"><span class="text-accent">›</span> <a href="/posts/${esc(p.slug)}/">${esc(p.title)}</a></p>
+          <p class="text-dim">${esc(p.summary)}</p>
+        </div>`,
+      ],
+    ];
+  },
+  read(args) {
+    const slug = args[0];
+    if (!slug) {
+      return [['line', '<span class="text-err">usage:</span> read &lt;slug&gt;  <span class="text-mute">(try </span><span class="text-accent">posts</span><span class="text-mute">)</span>']];
+    }
+    const p = POSTS.find((x) => x.slug === slug);
+    if (!p) {
+      return [['line', `<span class="text-err">no such post:</span> ${esc(slug)}`]];
+    }
+    setTimeout(() => {
+      window.location.href = `/posts/${p.slug}/`;
+    }, 250);
+    return [['line', `opening <span class="text-accent">${esc(p.title)}</span> ...`]];
+  },
+  blog() { return COMMANDS.posts!([]); },
   date() {
     return [['line', `<span class="text-dim">${esc(new Date().toString())}</span>`]];
   },
