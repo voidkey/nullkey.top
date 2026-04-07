@@ -1,12 +1,15 @@
 ---
 ---
-<footer class="flex-none flex items-center text-[11px] tracking-wide" style="padding-bottom:env(safe-area-inset-bottom);">
-  <div class="px-3 py-[5px] bg-accent text-bg font-semibold tracking-widest">READY</div>
-  <div class="px-3 py-[5px] bg-bg-raised text-dim">~/home</div>
-  <div class="hidden sm:block px-3 py-[5px] bg-bg-2 text-mute">main</div>
-  <div class="px-3 py-[5px] bg-bg-2 text-mute">zsh</div>
-  <div class="flex-1 bg-bg-2"></div>
-  <div class="hidden md:block px-3 py-[5px] bg-bg-2 text-mute">utf-8</div>
-  <div class="px-3 py-[5px] bg-bg-2 text-mute">up <span id="uptime" class="text-dim">0s</span></div>
-  <div class="px-3 py-[5px] bg-bg-raised text-dim">∎</div>
+<footer class="flex-none flex items-stretch border-t border-border text-[11px] tracking-wide" style="padding-bottom:env(safe-area-inset-bottom);">
+  <div class="seg lead">
+    <span class="pulse-dot"></span><b>READY</b>
+  </div>
+  <div class="seg">~/home</div>
+  <div class="seg hidden sm:flex">main</div>
+  <div class="seg">zsh</div>
+  <div class="seg flex-1" style="border-right:none;"></div>
+  <div class="seg hidden md:flex">theme: <b id="theme-name">clay</b></div>
+  <div class="seg hidden sm:flex">utf-8</div>
+  <div class="seg">up <b id="uptime">0s</b></div>
+  <div class="seg" style="border-right:none;">∎</div>
 </footer>

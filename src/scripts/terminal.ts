@@ -7,6 +7,7 @@ const input = document.getElementById('terminal-input') as HTMLInputElement | nu
 const caret = document.getElementById('caret') as HTMLElement | null;
 const clockEl = document.getElementById('clock');
 const uptimeEl = document.getElementById('uptime');
+const themeNameEl = document.getElementById('theme-name');
 const dataNode = document.getElementById('content-data');
 
 if (!term || !out || !input || !caret) {
@@ -41,6 +42,39 @@ function tick() {
 }
 tick();
 setInterval(tick, 1000);
+
+// ─── Theme system ─────────────────────────────────────────────────────
+const THEMES = ['clay', 'noir', 'paper', 'forest'] as const;
+type Theme = typeof THEMES[number];
+const THEME_KEY = 'nullkey-theme';
+
+function applyTheme(name: Theme) {
+  const html = document.documentElement;
+  THEMES.forEach((t) => html.classList.remove(`theme-${t}`));
+  html.classList.add(`theme-${name}`);
+  if (themeNameEl) themeNameEl.textContent = name;
+  try {
+    localStorage.setItem(THEME_KEY, name);
+  } catch {}
+}
+
+function currentTheme(): Theme {
+  const html = document.documentElement;
+  for (const t of THEMES) if (html.classList.contains(`theme-${t}`)) return t;
+  return 'clay';
+}
+
+// Restore from localStorage on boot
+try {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved && (THEMES as readonly string[]).includes(saved)) {
+    applyTheme(saved as Theme);
+  } else {
+    applyTheme('clay');
+  }
+} catch {
+  applyTheme('clay');
+}
 
 // ─── Helpers: escape + tiny markdown ──────────────────────────────────
 function esc(s: string): string {
@@ -134,6 +168,8 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       ['line', '  <span class="text-accent">projects</span> &lt;n&gt;  open one'],
       ['line', '  <span class="text-accent">uses</span>       hardware &amp; tools'],
       ['line', '  <span class="text-accent">contact</span>    how to reach me'],
+      ['line', '  <span class="text-accent">theme</span>      cycle themes (clay · noir · paper · forest)'],
+      ['line', '  <span class="text-accent">theme</span> &lt;name&gt; jump to a specific one'],
       ['line', '  <span class="text-accent">cat</span>        meow'],
       ['line', '  <span class="text-accent">ls</span>  <span class="text-accent">pwd</span>  <span class="text-accent">echo</span>  <span class="text-accent">date</span>  <span class="text-accent">clear</span>  <span class="text-accent">sudo</span>'],
     ];
@@ -234,6 +270,21 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
   },
   pet() {
     return [['line', '<span class="text-mute italic">*purrs* — clovemere</span>']];
+  },
+  theme(args) {
+    let next: Theme;
+    if (args[0]) {
+      const requested = args[0].toLowerCase();
+      if (!(THEMES as readonly string[]).includes(requested)) {
+        return [['line', `<span class="text-err">unknown theme:</span> ${esc(args[0])}  <span class="text-mute">(try </span>${THEMES.map((t) => `<span class="text-accent">${t}</span>`).join('<span class="text-mute"> · </span>')}<span class="text-mute">)</span>`]];
+      }
+      next = requested as Theme;
+    } else {
+      const idx = THEMES.indexOf(currentTheme());
+      next = THEMES[(idx + 1) % THEMES.length]!;
+    }
+    applyTheme(next);
+    return [['line', `theme → <span class="text-accent">${next}</span>`]];
   },
   clear() {
     out!.innerHTML = '';

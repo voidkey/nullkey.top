@@ -1,18 +1,27 @@
 ---
 ---
-<header class="flex-none flex items-center gap-4 px-[var(--pad,24px)] py-2 border-b border-border bg-[#0a0907] text-[11px] text-mute tracking-wider z-[5]">
-  <span class="border border-accent text-accent px-2 py-[1px] rounded-sm font-medium tracking-widest text-[10px]">NULLKEY</span>
-  <span class="hidden sm:inline text-dim">[<span class="text-text">0</span>] <span class="text-text">home</span></span>
-  <span class="hidden sm:inline">[1] projects</span>
-  <span class="hidden sm:inline">[2] now</span>
-  <span class="hidden sm:inline">[3] uses</span>
-  <span class="ml-auto flex items-center gap-4">
-    <span class="hidden sm:inline-flex items-center gap-1.5">
-      <span class="inline-block w-[7px] h-[7px] rounded-full bg-ok shadow-[0_0_8px_theme(colors.ok)] animate-pulse"></span>
-      online
+<header class="flex-none flex items-stretch border-b border-border bg-bg-2 text-[11px] tracking-wider z-[5]">
+  <div class="seg lead">
+    <span class="text-accent italic font-serif text-[13px] leading-none">/</span><b>nullkey</b>
+  </div>
+  <div class="seg hidden sm:flex">
+    <span class="text-mute">[0]</span><span class="text-text">home</span>
+  </div>
+  <div class="seg hidden sm:flex">
+    <span class="text-mute">[1]</span>projects
+  </div>
+  <div class="seg hidden md:flex">
+    <span class="text-mute">[2]</span>now
+  </div>
+  <div class="seg hidden md:flex">
+    <span class="text-mute">[3]</span>uses
+  </div>
+  <div class="seg flex-1 justify-end" style="border-right:none;">
+    <span class="hidden sm:inline-flex items-center gap-1.5 mr-3">
+      <span class="pulse-dot"></span>online
     </span>
-    <span class="hidden sm:inline">tty <span class="text-dim">s001</span></span>
-    <span class="hidden md:inline">utf-8</span>
-    <span id="clock">--:--</span>
-  </span>
+    <span class="hidden sm:inline mr-3">tty <b>s001</b></span>
+    <span class="hidden md:inline mr-3">utf-8</span>
+    <span id="clock" class="text-dim">--:--</span>
+  </div>
 </header>

@@ -7,10 +7,91 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Theme palettes (CSS variables on :root or html.theme-*) ─────────
+   Switching themes = setting a class on <html>.
+   The default is clay; no class needed.
+*/
+:root,
+html.theme-clay {
+  --c-bg:        #0e0d0b;
+  --c-bg-2:      #14120f;
+  --c-bg-raised: #1a1714;
+  --c-border:    #2b2620;
+  --c-text:      #e8e1d3;
+  --c-dim:       #8a7f6c;
+  --c-mute:      #56503f;
+  --c-accent:    #cc7755;
+  --c-accent-glow: rgba(204, 119, 85, 0.55);
+  --c-ok:        #7fae6b;
+  --c-err:       #c75d5d;
+  --c-blu:       #6f9dbf;
+  --c-mag:       #a878a8;
+  --c-vignette:  rgba(0, 0, 0, 0.6);
+  --c-noise-opacity: 0.4;
+  --c-selection-bg: #2a2010;
+}
+
+html.theme-noir {
+  --c-bg:        #0a0a0c;
+  --c-bg-2:      #101015;
+  --c-bg-raised: #16161c;
+  --c-border:    #2a2a32;
+  --c-text:      #e6e6ee;
+  --c-dim:       #8a8a98;
+  --c-mute:      #50505c;
+  --c-accent:    #d4d4dc;
+  --c-accent-glow: rgba(212, 212, 220, 0.5);
+  --c-ok:        #80c080;
+  --c-err:       #d06c6c;
+  --c-blu:       #7da0c0;
+  --c-mag:       #b08bb0;
+  --c-vignette:  rgba(0, 0, 0, 0.55);
+  --c-noise-opacity: 0.35;
+  --c-selection-bg: #2a2a35;
+}
+
+html.theme-paper {
+  --c-bg:        #f0e9d6;
+  --c-bg-2:      #ebe3cc;
+  --c-bg-raised: #e6dec3;
+  --c-border:    #c8bfa0;
+  --c-text:      #1f1a10;
+  --c-dim:       #6b5f44;
+  --c-mute:      #968a6e;
+  --c-accent:    #a5391f;
+  --c-accent-glow: rgba(165, 57, 31, 0.35);
+  --c-ok:        #5d8a4a;
+  --c-err:       #a83a2f;
+  --c-blu:       #486a8a;
+  --c-mag:       #784878;
+  --c-vignette:  rgba(80, 60, 20, 0.12);
+  --c-noise-opacity: 0.18;
+  --c-selection-bg: #e0c680;
+}
+
+html.theme-forest {
+  --c-bg:        #0a120c;
+  --c-bg-2:      #0f1810;
+  --c-bg-raised: #131e15;
+  --c-border:    #1e2a20;
+  --c-text:      #d6e6d6;
+  --c-dim:       #7e948a;
+  --c-mute:      #4a5e50;
+  --c-accent:    #8aaa70;
+  --c-accent-glow: rgba(138, 170, 112, 0.45);
+  --c-ok:        #80c080;
+  --c-err:       #c66060;
+  --c-blu:       #6e9bb0;
+  --c-mag:       #9078a8;
+  --c-vignette:  rgba(0, 10, 0, 0.55);
+  --c-noise-opacity: 0.35;
+  --c-selection-bg: #1f2e22;
+}
+
 @layer base {
   html, body {
-    background: theme('colors.bg');
-    color: theme('colors.text');
+    background: var(--c-bg);
+    color: var(--c-text);
     font-family: theme('fontFamily.mono');
     font-size: clamp(12.5px, 1.45vw, 14px);
     line-height: 1.6;
@@ -22,21 +103,21 @@
     margin: 0;
   }
   ::selection {
-    background: #2a2010;
-    color: theme('colors.accent');
+    background: var(--c-selection-bg);
+    color: var(--c-accent);
   }
   a {
-    color: theme('colors.accent');
+    color: var(--c-accent);
     text-decoration: none;
     border-bottom: 1px dashed transparent;
   }
   a:hover {
-    border-bottom-color: theme('colors.accent');
+    border-bottom-color: var(--c-accent);
   }
 }
 
 /* CRT atmosphere — vignette + scanlines + grain.
-   Sits above all content but pointer-events:none so nothing is blocked. */
+   Uses theme variables so it adapts per palette. */
 body::before {
   content: "";
   position: fixed;
@@ -44,7 +125,7 @@ body::before {
   pointer-events: none;
   z-index: 50;
   background:
-    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.6) 100%),
+    radial-gradient(ellipse at center, transparent 55%, var(--c-vignette) 100%),
     repeating-linear-gradient(0deg, rgba(255,255,255,0.018) 0 1px, transparent 1px 3px);
   mix-blend-mode: overlay;
 }
@@ -54,21 +135,19 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 51;
-  opacity: 0.4;
+  opacity: var(--c-noise-opacity);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .055 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* Scrollbar — thin warm */
 .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
 .scroll-thin::-webkit-scrollbar-track { background: transparent; }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: #2a2316;
+  background: var(--c-border);
   border-radius: 4px;
 }
-.scroll-thin::-webkit-scrollbar-thumb:hover { background: #3a3120; }
+.scroll-thin::-webkit-scrollbar-thumb:hover { background: var(--c-mute); }
 
 @layer components {
-  /* Output blocks (appended in scrollback) */
   .out-line {
     margin: 0;
     white-space: pre-wrap;
@@ -76,22 +155,21 @@ body::after {
     font-family: theme('fontFamily.mono');
   }
   .out-card {
-    border: 1px dashed theme('colors.border');
+    border: 1px dashed var(--c-border);
     border-radius: 4px;
     padding: 12px 16px;
     margin: 12px 0;
-    background: linear-gradient(180deg, rgba(201,100,66,0.035), transparent);
+    background: linear-gradient(180deg, var(--c-bg-raised), transparent);
   }
   .out-card h5 {
     margin: 0 0 6px;
     font-weight: 500;
     font-size: 11px;
-    color: theme('colors.accent');
+    color: var(--c-accent);
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
-  /* Boot sequence stagger */
   .boot > * {
     opacity: 0;
     transform: translateY(4px);
@@ -107,7 +185,6 @@ body::after {
     to { opacity: 1; transform: none; }
   }
 
-  /* Hero typographic name */
   .hero-name {
     font-family: theme('fontFamily.serif');
     font-weight: 700;
@@ -115,16 +192,15 @@ body::after {
     font-size: clamp(54px, 12vw, 128px);
     line-height: 0.85;
     letter-spacing: -0.04em;
-    color: theme('colors.text');
+    color: var(--c-text);
     margin: 0;
   }
   .hero-name .slash {
-    color: theme('colors.accent');
+    color: var(--c-accent);
     font-style: italic;
-    font-weight: 700;
   }
   .hero-name .dot {
-    color: theme('colors.accent');
+    color: var(--c-accent);
   }
   .hero-tagline {
     margin-top: 10px;
@@ -132,17 +208,16 @@ body::after {
     font-style: italic;
     font-weight: 700;
     font-size: clamp(15px, 1.6vw, 18px);
-    color: theme('colors.text');
+    color: var(--c-text);
   }
 
-  /* Custom amber-like cursor block */
   .caret {
     pointer-events: none;
     display: inline-block;
     width: 0.55em;
     height: 1.05em;
-    background: theme('colors.accent');
-    box-shadow: 0 0 12px rgba(201, 100, 66, 0.55);
+    background: var(--c-accent);
+    box-shadow: 0 0 12px var(--c-accent-glow);
     animation: caretblink 1.05s steps(1) infinite;
     margin-left: -2px;
     vertical-align: text-bottom;
@@ -151,15 +226,42 @@ body::after {
     50% { opacity: 0; }
   }
 
-  /* Keyboard hint chips */
   .kbd {
-    border: 1px solid theme('colors.border');
+    border: 1px solid var(--c-border);
     border-bottom-width: 2px;
     padding: 1px 6px;
     border-radius: 3px;
-    color: theme('colors.dim');
+    color: var(--c-dim);
     font-size: 11px;
-    background: #1d180f;
+    background: var(--c-bg-raised);
+  }
+
+  /* Status / topbar segments — neutral, accent only on indicators */
+  .seg {
+    padding: 5px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--c-bg-2);
+    color: var(--c-mute);
+    border-right: 1px solid var(--c-border);
+  }
+  .seg:last-child { border-right: none; }
+  .seg b { color: var(--c-dim); font-weight: 500; }
+  .seg.lead { background: var(--c-bg-raised); color: var(--c-dim); }
+  .seg.lead b { color: var(--c-text); }
+
+  .pulse-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c-ok);
+    box-shadow: 0 0 8px var(--c-ok);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    50% { opacity: 0.35; transform: scale(0.85); }
   }
 }
 
