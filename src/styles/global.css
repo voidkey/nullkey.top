@@ -13,13 +13,13 @@
 */
 :root,
 html.theme-clay {
-  --c-bg:        #0e0d0b;
-  --c-bg-2:      #14120f;
-  --c-bg-raised: #1a1714;
-  --c-border:    #2b2620;
-  --c-text:      #e8e1d3;
-  --c-dim:       #8a7f6c;
-  --c-mute:      #56503f;
+  --c-bg:        #14110d;
+  --c-bg-2:      #1c1812;
+  --c-bg-raised: #221d16;
+  --c-border:    #322a20;
+  --c-text:      #ece4d3;
+  --c-dim:       #948872;
+  --c-mute:      #5e5742;
   --c-accent:    #cc7755;
   --c-accent-glow: rgba(204, 119, 85, 0.55);
   --c-ok:        #7fae6b;
@@ -27,65 +27,69 @@ html.theme-clay {
   --c-blu:       #6f9dbf;
   --c-mag:       #a878a8;
   --c-vignette:  rgba(0, 0, 0, 0.6);
-  --c-noise-opacity: 0.4;
-  --c-selection-bg: #2a2010;
+  --c-noise-opacity: 0.38;
+  --c-selection-bg: #34270f;
 }
 
-html.theme-noir {
-  --c-bg:        #0a0a0c;
-  --c-bg-2:      #101015;
-  --c-bg-raised: #16161c;
-  --c-border:    #2a2a32;
-  --c-text:      #e6e6ee;
-  --c-dim:       #8a8a98;
-  --c-mute:      #50505c;
-  --c-accent:    #d4d4dc;
-  --c-accent-glow: rgba(212, 212, 220, 0.5);
-  --c-ok:        #80c080;
-  --c-err:       #d06c6c;
-  --c-blu:       #7da0c0;
-  --c-mag:       #b08bb0;
-  --c-vignette:  rgba(0, 0, 0, 0.55);
-  --c-noise-opacity: 0.35;
-  --c-selection-bg: #2a2a35;
+/* Matrix — bright CRT phosphor green. Dramatic, iconic. */
+html.theme-matrix {
+  --c-bg:        #050f08;
+  --c-bg-2:      #0a1810;
+  --c-bg-raised: #102316;
+  --c-border:    #1c361f;
+  --c-text:      #c8e8c0;
+  --c-dim:       #6fa07c;
+  --c-mute:      #3a6048;
+  --c-accent:    #5dd27a;
+  --c-accent-glow: rgba(93, 210, 122, 0.6);
+  --c-ok:        #a8f0a0;
+  --c-err:       #e08070;
+  --c-blu:       #7ed8b0;
+  --c-mag:       #b0d870;
+  --c-vignette:  rgba(0, 20, 5, 0.6);
+  --c-noise-opacity: 0.42;
+  --c-selection-bg: #143020;
 }
 
+/* Paper — bright cream daylight theme. */
 html.theme-paper {
-  --c-bg:        #f0e9d6;
+  --c-bg:        #f1ead8;
   --c-bg-2:      #ebe3cc;
-  --c-bg-raised: #e6dec3;
+  --c-bg-raised: #e6dec0;
   --c-border:    #c8bfa0;
-  --c-text:      #1f1a10;
+  --c-text:      #221b10;
   --c-dim:       #6b5f44;
-  --c-mute:      #968a6e;
+  --c-mute:      #8a7e62;
   --c-accent:    #a5391f;
   --c-accent-glow: rgba(165, 57, 31, 0.35);
-  --c-ok:        #5d8a4a;
+  --c-ok:        #4a7a3a;
   --c-err:       #a83a2f;
   --c-blu:       #486a8a;
   --c-mag:       #784878;
   --c-vignette:  rgba(80, 60, 20, 0.12);
-  --c-noise-opacity: 0.18;
+  --c-noise-opacity: 0.16;
   --c-selection-bg: #e0c680;
 }
 
-html.theme-forest {
-  --c-bg:        #0a120c;
-  --c-bg-2:      #0f1810;
-  --c-bg-raised: #131e15;
-  --c-border:    #1e2a20;
-  --c-text:      #d6e6d6;
-  --c-dim:       #7e948a;
-  --c-mute:      #4a5e50;
-  --c-accent:    #8aaa70;
-  --c-accent-glow: rgba(138, 170, 112, 0.45);
-  --c-ok:        #80c080;
-  --c-err:       #c66060;
-  --c-blu:       #6e9bb0;
-  --c-mag:       #9078a8;
-  --c-vignette:  rgba(0, 10, 0, 0.55);
-  --c-noise-opacity: 0.35;
-  --c-selection-bg: #1f2e22;
+/* Noir — pure cold dark; accent is PURE WHITE, brighter than the
+   slightly muted text. Inverts the usual relationship: accent IS contrast. */
+html.theme-noir {
+  --c-bg:        #07070a;
+  --c-bg-2:      #0c0c12;
+  --c-bg-raised: #131319;
+  --c-border:    #25252f;
+  --c-text:      #b8b8c0;
+  --c-dim:       #707078;
+  --c-mute:      #404048;
+  --c-accent:    #ffffff;
+  --c-accent-glow: rgba(255, 255, 255, 0.45);
+  --c-ok:        #a0d090;
+  --c-err:       #d07878;
+  --c-blu:       #88a0c8;
+  --c-mag:       #b088b0;
+  --c-vignette:  rgba(0, 0, 0, 0.55);
+  --c-noise-opacity: 0.32;
+  --c-selection-bg: #25252f;
 }
 
 @layer base {
