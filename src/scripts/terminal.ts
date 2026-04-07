@@ -183,7 +183,8 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         row('cat &lt;file&gt;', 'meow') +
         row('echo &lt;text&gt;', 'print text back') +
         row('date', 'current time') +
-        row('clear', 'clear the scrollback') +
+        row('clear', 'clear scrollback (keep banner)') +
+        row('reset', 'wipe everything, banner included') +
         row('sudo &lt;...&gt;', 'try it') +
         row('exit', 'try it')
     );
@@ -351,7 +352,16 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
   clear() {
     out!.innerHTML = '';
     const boot = document.getElementById('boot');
+    if (boot) boot.style.display = '';
+    term!.scrollTop = 0;
+    return;
+  },
+  reset() {
+    out!.innerHTML = '';
+    const boot = document.getElementById('boot');
     if (boot) boot.style.display = 'none';
+    append('<pre class="out-line text-mute">[reset] terminal reset · scrollback wiped</pre>');
+    scrollEnd();
     return;
   },
 };
