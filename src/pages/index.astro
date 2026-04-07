@@ -4,6 +4,7 @@ import Topbar from '~/components/Topbar.astro';
 import Hero from '~/components/Hero.astro';
 import Promptline from '~/components/Promptline.astro';
 import PanelTemplates from '~/components/PanelTemplates.astro';
+import Mascot from '~/components/Mascot.astro';
 ---
 <!doctype html>
 <html lang="en">
@@ -26,8 +27,10 @@ import PanelTemplates from '~/components/PanelTemplates.astro';
       <Promptline />
     </main>
     <PanelTemplates />
+    <Mascot />
     <script>
       import '~/scripts/terminal.ts';
+      import '~/scripts/mascot.ts';
     </script>
   </body>
 </html>

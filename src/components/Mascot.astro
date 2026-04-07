@@ -1,0 +1,40 @@
+---
+---
+<div
+  id="mascot"
+  class="fixed bottom-6 right-6 w-24 h-24 z-20 pointer-events-auto select-none"
+  aria-hidden="true"
+>
+  <svg viewBox="0 0 100 100" class="w-full h-full" id="mascot-svg" style="filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));">
+    <ellipse cx="50" cy="58" rx="38" ry="32" fill="#d97757" />
+    <ellipse cx="38" cy="42" rx="10" ry="6" fill="#e6906f" opacity="0.6" />
+    <circle id="mascot-eye-l" cx="38" cy="55" r="4" fill="#1a1613" />
+    <circle id="mascot-eye-r" cx="62" cy="55" r="4" fill="#1a1613" />
+    <rect id="mascot-lids" x="32" y="53" width="36" height="2" fill="#1a1613" opacity="0" rx="1" />
+  </svg>
+  <div
+    id="mascot-bubble"
+    class="absolute -top-8 right-0 text-meta text-dim bg-bg-raised border border-border rounded-sm px-2 py-1 opacity-0 pointer-events-none whitespace-nowrap transition-opacity"
+  ></div>
+</div>
+
+<style>
+  #mascot-svg {
+    transform-origin: center 70%;
+    animation: mascot-breathe 4s ease-in-out infinite;
+  }
+  @keyframes mascot-breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.02); }
+  }
+  #mascot.hop #mascot-svg {
+    animation: mascot-hop 280ms ease-out;
+  }
+  @keyframes mascot-hop {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #mascot-svg { animation: none; }
+  }
+</style>
