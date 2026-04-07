@@ -2,18 +2,16 @@
 ---
 
 ### Hardware
-- MacBook Pro 14" (M3 Pro)
-- Keychron Q1 with Holy Pandas
-- Logitech MX Master 3S
+- MacBook Pro
 
 ### Editor
-- Neovim (LazyVim)
-- VS Code for the React side of things
+- VS Code
 
-### CLI
-- Ghostty
-- Fish + Starship
-- ripgrep, fd, fzf, bat, jq
+### Terminal
+- iTerm2 + zsh
 
 ### Daily
-- Linear, Raycast, 1Password, Obsidian
+- Notion, 1Password
+
+### AI
+- Claude Code — pair-programmer of choice
