@@ -1,0 +1,30 @@
+---
+const HINTS = ['about', 'now', 'projects', 'uses', 'contact', 'help'];
+---
+<footer class="sticky bottom-0 bg-bg pt-3 border-t border-border mt-4 text-body" id="promptline">
+  <div class="flex items-center gap-2">
+    <span class="text-dim">~ $</span>
+    <input
+      id="terminal-input"
+      type="text"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      aria-label="terminal command input"
+      class="flex-1 bg-transparent border-0 outline-none text-text font-mono text-body caret-accent"
+    />
+  </div>
+  <div class="text-meta text-dim mt-2">
+    try:
+    {HINTS.map((h, i) => (
+      <>
+        {i > 0 && <span> · </span>}
+        <button
+          type="button"
+          data-hint={h}
+          class="text-dim hover:text-accent focus:text-accent focus:outline focus:outline-2 focus:outline-accent rounded-sm"
+        >{h}</button>
+      </>
+    ))}
+  </div>
+</footer>

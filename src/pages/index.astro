@@ -1,5 +1,8 @@
 ---
 import '~/styles/global.css';
+import Topbar from '~/components/Topbar.astro';
+import Hero from '~/components/Hero.astro';
+import Promptline from '~/components/Promptline.astro';
 ---
 <!doctype html>
 <html lang="en">
@@ -7,8 +10,19 @@ import '~/styles/global.css';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>nullkey</title>
+    <meta name="description" content="Nullkey — software engineer in Shanghai." />
   </head>
-  <body>
-    <main class="font-mono text-body text-text bg-bg">theme works</main>
+  <body class="bg-bg text-text font-mono">
+    <main class="mx-auto max-w-terminal flex flex-col px-4 py-5 sm:px-8 sm:py-6" style="max-height:100svh;height:100svh;">
+      <Topbar />
+      <Hero />
+      <section
+        id="summon"
+        class="flex-1 overflow-y-auto scroll-thin mt-4"
+        aria-live="polite"
+        aria-label="terminal output"
+      ></section>
+      <Promptline />
+    </main>
   </body>
 </html>
