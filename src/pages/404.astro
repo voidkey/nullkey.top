@@ -1,0 +1,28 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="404 — nullkey"
+  description="Page not found."
+  mode="home"
+  status="404"
+  showBack
+>
+  <main class="flex-1 min-h-0 overflow-y-auto px-[var(--pad)] py-16 flex items-center justify-center">
+    <div class="text-center">
+      <pre class="out-line text-accent inline-block text-left leading-[1.1] text-[14px]" aria-hidden="true">          |\      _,,,---,,_
+   ZZZzz  /,`.-'`'    -.  ;-;;,_
+         |,4-  ) )-,_. ,\ (  `'-'
+        '---''(_/--'  `-'\_)</pre>
+      <h1 class="font-serif font-bold text-text mt-6 mb-2" style="font-size:clamp(48px,9vw,96px);line-height:1;letter-spacing:-0.04em;">
+        <span class="text-accent italic">/</span>404<span class="text-accent">.</span>
+      </h1>
+      <p class="text-mute text-[13px] font-mono">page not found · clovemere is napping</p>
+      <p class="text-dim text-[12px] mt-4 font-mono">
+        <a href="/" class="text-accent">❮ home</a>
+        <span class="text-mute"> · </span>
+        <a href="/posts/" class="text-accent">posts</a>
+      </p>
+    </div>
+  </main>
+</BaseLayout>
