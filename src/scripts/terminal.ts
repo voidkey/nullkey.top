@@ -31,6 +31,34 @@ const CONTENT: ContentData = dataNode
 type PostMeta = { slug: string; title: string; date: string; summary: string; tags: string[] };
 const POSTS: PostMeta[] = postsNode ? JSON.parse(postsNode.textContent || '[]') : [];
 
+// Normalize a user string into a slug-shaped candidate: lowercased, non-alnum
+// runs collapsed to `-`, trimmed. So `"On Quiet Tools"`, `on quiet tools`, and
+// `quiet-tools` all compare equal after normalization.
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Exact → prefix → substring match across the given keys. Used by both `read`
+// (posts by slug/title) and `project` (projects by name).
+function fuzzyFind<T>(
+  items: T[],
+  needle: string,
+  keysOf: (item: T) => string[]
+): { hit?: T; matches?: T[] } {
+  const n = normalize(needle);
+  if (!n) return {};
+  const normKeys = (it: T) => keysOf(it).map(normalize);
+  const hit = items.find((it) => normKeys(it).some((k) => k === n));
+  if (hit) return { hit };
+  const prefix = items.filter((it) => normKeys(it).some((k) => k.startsWith(n)));
+  if (prefix.length === 1) return { hit: prefix[0] };
+  if (prefix.length > 1) return { matches: prefix };
+  const sub = items.filter((it) => normKeys(it).some((k) => k.includes(n)));
+  if (sub.length === 1) return { hit: sub[0] };
+  if (sub.length > 1) return { matches: sub };
+  return {};
+}
+
 function openPost(p: PostMeta): Block[] {
   setTimeout(() => {
     window.location.href = `/posts/${p.slug}/`;
@@ -49,6 +77,20 @@ function ambiguousPosts(matches: PostMeta[], needle: string): Block[] {
     ['line', `<span class="text-err">ambiguous:</span> "${esc(needle)}" matches ${matches.length} posts:`],
     ['raw', `<div class="ml-4 my-1">${rows}</div>`],
     ['line', '<span class="text-mute">be more specific, or type </span><span class="text-accent">read &lt;n&gt;</span><span class="text-mute"> for the nth from posts list.</span>'],
+  ];
+}
+
+function ambiguousProjects(matches: ProjectData[], needle: string): Block[] {
+  const rows = matches
+    .map(
+      (p, i) =>
+        `<div class="py-[2px]"><span class="text-mute">${String(i + 1).padStart(2, ' ')}.</span> <span class="text-accent">${esc(p.name)}</span> <span class="text-mute">— ${esc(p.summary)}</span></div>`
+    )
+    .join('');
+  return [
+    ['line', `<span class="text-err">ambiguous:</span> "${esc(needle)}" matches ${matches.length} projects:`],
+    ['raw', `<div class="ml-4 my-1">${rows}</div>`],
+    ['line', '<span class="text-mute">be more specific, or type </span><span class="text-accent">project &lt;n&gt;</span><span class="text-mute"> for the nth from project list.</span>'],
   ];
 }
 
@@ -191,7 +233,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
         row('about', 'the longer story') +
         row('now', 'what i\'m doing right now') +
         row('project', 'list things i\'ve built') +
-        row('project &lt;n&gt;', 'open the nth project') +
+        row('project &lt;n | name&gt;', 'open a project (index or name)') +
         row('uses', 'hardware &amp; tools') +
         row('contact', 'how to reach me')
     );
@@ -281,8 +323,23 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
   },
   project(args) {
     if (args[0]) {
-      const n = parseInt(args[0], 10);
-      const p = CONTENT.projects[n - 1];
+      // Numeric index first: `project 2` → 2nd from list
+      const asNum = parseInt(args[0]!, 10);
+      let p: ProjectData | undefined;
+      if (args.length === 1 && !isNaN(asNum) && asNum > 0 && asNum <= CONTENT.projects.length) {
+        p = CONTENT.projects[asNum - 1];
+      } else {
+        const raw = args.join(' ').trim();
+        const { hit, matches } = fuzzyFind(CONTENT.projects, raw, (pr) => [pr.name]);
+        if (matches) return ambiguousProjects(matches, raw);
+        if (!hit) {
+          return [
+            ['line', `<span class="text-err">no such project:</span> ${esc(raw)}`],
+            ['line', '<span class="text-mute">try </span><span class="text-accent">project</span><span class="text-mute"> for the full list.</span>'],
+          ];
+        }
+        p = hit;
+      }
       if (!p) return [['line', `<span class="text-err">no project at index ${esc(args[0])}</span>`]];
       const repoHtml = p.repo
         ? `<a href="${esc(p.repo)}" class="text-accent">${esc(p.repo)}</a>`
@@ -314,7 +371,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       .join('');
     return [
       ['raw', `<div class="out-card text-[13px]"><h5>$ project — ${CONTENT.projects.length} results</h5>${rows}</div>`],
-      ['line', '<span class="text-mute">→ </span><span class="text-accent">project &lt;n&gt;</span><span class="text-mute"> to open one</span>'],
+      ['line', '<span class="text-mute">→ </span><span class="text-accent">project &lt;n | name&gt;</span><span class="text-mute"> to open one</span>'],
     ];
   },
   contact() {
@@ -383,35 +440,9 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       return openPost(POSTS[asNum - 1]!);
     }
 
-    // Normalize the rest of the line into a candidate slug.
-    // Collapse spaces, drop punctuation, lowercase. So `read on quiet tools`
-    // and `read quiet-tools` and `read "On Quiet Tools"` all map to `quiet-tools`.
-    const raw = args.join(' ').toLowerCase().trim();
-    const normalize = (s: string) =>
-      s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const needle = normalize(raw);
-
-    // 1) exact slug match
-    let hit = POSTS.find((p) => p.slug === needle);
-    // 2) exact normalized-title match
-    if (!hit) hit = POSTS.find((p) => normalize(p.title) === needle);
-    // 3) needle is a prefix of a slug or title
-    if (!hit) {
-      const prefix = POSTS.filter(
-        (p) => p.slug.startsWith(needle) || normalize(p.title).startsWith(needle)
-      );
-      if (prefix.length === 1) hit = prefix[0]!;
-      else if (prefix.length > 1) return ambiguousPosts(prefix, raw);
-    }
-    // 4) needle is a substring
-    if (!hit) {
-      const sub = POSTS.filter(
-        (p) => p.slug.includes(needle) || normalize(p.title).includes(needle)
-      );
-      if (sub.length === 1) hit = sub[0]!;
-      else if (sub.length > 1) return ambiguousPosts(sub, raw);
-    }
-
+    const raw = args.join(' ').trim();
+    const { hit, matches } = fuzzyFind(POSTS, raw, (p) => [p.slug, p.title]);
+    if (matches) return ambiguousPosts(matches, raw);
     if (!hit) {
       return [
         ['line', `<span class="text-err">no such post:</span> ${esc(raw)}`],
@@ -574,6 +605,21 @@ input.addEventListener('keydown', (e) => {
         updateCaret();
       } else if (matches.length > 1) {
         append(`<pre class="out-line text-dim">${matches.map((m) => esc(m.slug)).join('  ')}</pre>`);
+        scrollEnd();
+      }
+      return;
+    }
+    // Context-aware: after `project `, complete against project names
+    const projectMatch = raw.match(/^(project\s+)(.*)$/i);
+    if (projectMatch) {
+      const [, head, partial] = projectMatch;
+      const p = (partial ?? '').toLowerCase();
+      const matches = CONTENT.projects.filter((pr) => pr.name.toLowerCase().startsWith(p));
+      if (matches.length === 1) {
+        input.value = head + matches[0]!.name;
+        updateCaret();
+      } else if (matches.length > 1) {
+        append(`<pre class="out-line text-dim">${matches.map((m) => esc(m.name)).join('  ')}</pre>`);
         scrollEnd();
       }
       return;
