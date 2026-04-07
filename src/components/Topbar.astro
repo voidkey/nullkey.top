@@ -45,10 +45,10 @@ const tabs = [
   <ThemeSwitcher />
 </header>
 
-{showBack && (
-  <script is:inline>
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') window.location.href = '/';
-    });
-  </script>
-)}
+<script is:inline>
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('back-home')) {
+      window.location.href = '/';
+    }
+  });
+</script>
