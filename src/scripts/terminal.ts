@@ -44,7 +44,7 @@ tick();
 setInterval(tick, 1000);
 
 // ─── Theme system ─────────────────────────────────────────────────────
-const THEMES = ['clay', 'matrix', 'paper', 'noir'] as const;
+const THEMES = ['clay', 'gruvbox', 'nord', 'paper'] as const;
 type Theme = typeof THEMES[number];
 const THEME_KEY = 'nullkey-theme';
 
@@ -168,7 +168,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       ['line', '  <span class="text-accent">projects</span> &lt;n&gt;  open one'],
       ['line', '  <span class="text-accent">uses</span>       hardware &amp; tools'],
       ['line', '  <span class="text-accent">contact</span>    how to reach me'],
-      ['line', '  <span class="text-accent">theme</span>      cycle themes (clay · matrix · paper · noir)'],
+      ['line', '  <span class="text-accent">theme</span>      cycle themes (clay · gruvbox · nord · paper)'],
       ['line', '  <span class="text-accent">theme</span> &lt;name&gt; jump to a specific one'],
       ['line', '  <span class="text-accent">cat</span>        meow'],
       ['line', '  <span class="text-accent">ls</span>  <span class="text-accent">pwd</span>  <span class="text-accent">echo</span>  <span class="text-accent">date</span>  <span class="text-accent">clear</span>  <span class="text-accent">sudo</span>'],

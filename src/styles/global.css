@@ -31,24 +31,24 @@ html.theme-clay {
   --c-selection-bg: #34270f;
 }
 
-/* Matrix — bright CRT phosphor green. Dramatic, iconic. */
-html.theme-matrix {
-  --c-bg:        #050f08;
-  --c-bg-2:      #0a1810;
-  --c-bg-raised: #102316;
-  --c-border:    #1c361f;
-  --c-text:      #c8e8c0;
-  --c-dim:       #6fa07c;
-  --c-mute:      #3a6048;
-  --c-accent:    #5dd27a;
-  --c-accent-glow: rgba(93, 210, 122, 0.6);
-  --c-ok:        #a8f0a0;
-  --c-err:       #e08070;
-  --c-blu:       #7ed8b0;
-  --c-mag:       #b0d870;
-  --c-vignette:  rgba(0, 20, 5, 0.6);
-  --c-noise-opacity: 0.42;
-  --c-selection-bg: #143020;
+/* Gruvbox — retro warm earth tones, the classic dev palette. */
+html.theme-gruvbox {
+  --c-bg:        #1d2021;
+  --c-bg-2:      #282828;
+  --c-bg-raised: #32302f;
+  --c-border:    #3c3836;
+  --c-text:      #ebdbb2;
+  --c-dim:       #a89984;
+  --c-mute:      #665c54;
+  --c-accent:    #fe8019;
+  --c-accent-glow: rgba(254, 128, 25, 0.5);
+  --c-ok:        #b8bb26;
+  --c-err:       #fb4934;
+  --c-blu:       #83a598;
+  --c-mag:       #d3869b;
+  --c-vignette:  rgba(0, 0, 0, 0.55);
+  --c-noise-opacity: 0.36;
+  --c-selection-bg: #3c3836;
 }
 
 /* Paper — bright cream daylight theme. */
@@ -71,25 +71,24 @@ html.theme-paper {
   --c-selection-bg: #e0c680;
 }
 
-/* Noir — pure cold dark; accent is PURE WHITE, brighter than the
-   slightly muted text. Inverts the usual relationship: accent IS contrast. */
-html.theme-noir {
-  --c-bg:        #07070a;
-  --c-bg-2:      #0c0c12;
-  --c-bg-raised: #131319;
-  --c-border:    #25252f;
-  --c-text:      #b8b8c0;
-  --c-dim:       #707078;
-  --c-mute:      #404048;
-  --c-accent:    #ffffff;
-  --c-accent-glow: rgba(255, 255, 255, 0.45);
-  --c-ok:        #a0d090;
-  --c-err:       #d07878;
-  --c-blu:       #88a0c8;
-  --c-mag:       #b088b0;
-  --c-vignette:  rgba(0, 0, 0, 0.55);
-  --c-noise-opacity: 0.32;
-  --c-selection-bg: #25252f;
+/* Nord — cool Scandinavian blues. The opposite end of color temperature. */
+html.theme-nord {
+  --c-bg:        #2e3440;
+  --c-bg-2:      #353c4a;
+  --c-bg-raised: #3b4252;
+  --c-border:    #434c5e;
+  --c-text:      #d8dee9;
+  --c-dim:       #8b95a8;
+  --c-mute:      #4c566a;
+  --c-accent:    #88c0d0;
+  --c-accent-glow: rgba(136, 192, 208, 0.5);
+  --c-ok:        #a3be8c;
+  --c-err:       #bf616a;
+  --c-blu:       #81a1c1;
+  --c-mag:       #b48ead;
+  --c-vignette:  rgba(10, 15, 25, 0.5);
+  --c-noise-opacity: 0.3;
+  --c-selection-bg: #434c5e;
 }
 
 @layer base {
