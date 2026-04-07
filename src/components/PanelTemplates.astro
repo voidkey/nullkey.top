@@ -1,0 +1,159 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const about = await getEntry('about', 'about');
+const now = await getEntry('now', 'now');
+const uses = await getEntry('uses', 'uses');
+
+const aboutRendered = about ? await about.render() : null;
+const nowRendered   = now   ? await now.render()   : null;
+const usesRendered  = uses  ? await uses.render()  : null;
+
+const AboutContent = aboutRendered?.Content;
+const NowContent   = nowRendered?.Content;
+const UsesContent  = usesRendered?.Content;
+
+const nowUpdated = now?.data.updated
+  ? now.data.updated.toISOString().slice(0, 10)
+  : null;
+
+const COMMANDS = [
+  { cmd: 'about',    label: 'long-form bio' },
+  { cmd: 'now',      label: 'what I am doing' },
+  { cmd: 'projects', label: 'things I built' },
+  { cmd: 'uses',     label: 'hardware & tools' },
+  { cmd: 'contact',  label: 'reach me' },
+  { cmd: 'whoami',   label: 'the hero block' },
+  { cmd: 'clear',    label: 'empty the screen' },
+  { cmd: 'help',     label: 'this list' },
+];
+
+const CONTACTS = [
+  { label: 'github', value: 'github.com/nullkey',   href: 'https://github.com/nullkey' },
+  { label: 'x',      value: '@nullkey',             href: 'https://x.com/nullkey' },
+  { label: 'email',  value: 'hi@nullkey.dev',       href: 'mailto:hi@nullkey.dev' },
+];
+---
+
+<template id="panel-whoami">
+  <div class="panel">
+    <div class="panel-head"><span><span class="text-accent">▍</span> whoami</span><span class="text-dim">esc to close</span></div>
+    <div class="panel-body">
+      <p>Nullkey · software engineer · Shanghai</p>
+      <p class="font-serif italic text-quote">"I build small, sharp things — sometimes for everyone."</p>
+    </div>
+  </div>
+</template>
+
+<template id="panel-about">
+  <div class="panel">
+    <div class="panel-head"><span><span class="text-accent">▍</span> about</span><span class="text-dim">esc to close</span></div>
+    <div class="panel-body prose-panel">
+      {AboutContent && <AboutContent />}
+    </div>
+  </div>
+</template>
+
+<template id="panel-now">
+  <div class="panel">
+    <div class="panel-head">
+      <span><span class="text-accent">▍</span> now</span>
+      <span class="text-dim">{nowUpdated ? `updated ${nowUpdated}` : 'esc to close'}</span>
+    </div>
+    <div class="panel-body prose-panel">
+      {NowContent && <NowContent />}
+    </div>
+  </div>
+</template>
+
+<template id="panel-projects">
+  <div class="panel">
+    <div class="panel-head"><span><span class="text-accent">▍</span> projects <span class="text-dim">— {projects.length} results</span></span><span class="text-dim">esc to close</span></div>
+    <div class="panel-body">
+      {projects.map((p, i) => (
+        <div class="project-row" data-index={i + 1}>
+          <span class="text-dim">{String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <div class="text-text">{p.data.name}</div>
+            <div class="text-dim text-meta">{p.data.summary}</div>
+          </div>
+          <span class="text-accent text-meta">{p.data.lang}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</template>
+
+{projects.map((p, i) => (
+  <template id={`panel-projects-${i + 1}`}>
+    <div class="panel">
+      <div class="panel-head"><span><span class="text-accent">▍</span> projects/{p.data.name}</span><span class="text-dim">esc to close</span></div>
+      <div class="panel-body prose-panel">
+        <p class="text-meta text-dim">{p.data.lang}{p.data.repo && ` · ${p.data.repo}`}</p>
+        <p>{p.data.summary}</p>
+        <p>{p.body}</p>
+        {p.data.repo && <p><a class="text-accent underline" href={p.data.repo}>repo ↗</a></p>}
+      </div>
+    </div>
+  </template>
+))}
+
+<template id="panel-uses">
+  <div class="panel">
+    <div class="panel-head"><span><span class="text-accent">▍</span> uses</span><span class="text-dim">esc to close</span></div>
+    <div class="panel-body prose-panel">
+      {UsesContent && <UsesContent />}
+    </div>
+  </div>
+</template>
+
+<template id="panel-contact">
+  <div class="panel">
+    <div class="panel-head"><span><span class="text-accent">▍</span> contact</span><span class="text-dim">↵ to copy · esc to close</span></div>
+    <div class="panel-body">
+      {CONTACTS.map((c) => (
+        <div
+          class="contact-row"
+          tabindex="0"
+          data-copy={c.value}
+        >
+          <span class="text-dim w-16 inline-block">{c.label}</span>
+          <a href={c.href} class="text-text hover:text-accent">{c.value}</a>
+        </div>
+      ))}
+    </div>
+  </div>
+</template>
+
+<template id="panel-help">
+  <div class="panel">
+    <div class="panel-head"><span><span class="text-accent">▍</span> help</span><span class="text-dim">esc to close</span></div>
+    <div class="panel-body">
+      {COMMANDS.map((c) => (
+        <div class="grid grid-cols-[100px_1fr] gap-4 py-1">
+          <span class="text-accent">{c.cmd}</span>
+          <span class="text-dim">{c.label}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</template>
+
+<template id="panel-unknown">
+  <div class="panel">
+    <div class="panel-body text-err">command not found — type 'help'</div>
+  </div>
+</template>
+
+<template id="panel-sudo">
+  <div class="panel">
+    <div class="panel-body text-err">Permission denied. nice try.</div>
+  </div>
+</template>
+
+<template id="panel-pet">
+  <div class="panel">
+    <div class="panel-body text-dim italic">*purrs* — clove</div>
+  </div>
+</template>
