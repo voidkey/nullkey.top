@@ -38,7 +38,7 @@ function normalize(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-// Exact → prefix → substring match across the given keys. Used by both `read`
+// Exact → prefix → substring match across the given keys. Used by both `post`
 // (posts by slug/title) and `project` (projects by name).
 function fuzzyFind<T>(
   items: T[],
@@ -76,7 +76,7 @@ function ambiguousPosts(matches: PostMeta[], needle: string): Block[] {
   return [
     ['line', `<span class="text-err">ambiguous:</span> "${esc(needle)}" matches ${matches.length} posts:`],
     ['raw', `<div class="ml-4 my-1">${rows}</div>`],
-    ['line', '<span class="text-mute">be more specific, or type </span><span class="text-accent">read &lt;n&gt;</span><span class="text-mute"> for the nth from posts list.</span>'],
+    ['line', '<span class="text-mute">be more specific, or type </span><span class="text-accent">post &lt;n&gt;</span><span class="text-mute"> for the nth from post list.</span>'],
   ];
 }
 
@@ -96,6 +96,12 @@ function ambiguousProjects(matches: ProjectData[], needle: string): Block[] {
 
 // startedAt is reused by whoami's uptime field
 const startedAt = Date.now();
+
+// pet command state
+let petStreak = 0;
+let lastPetAt = 0;
+let petKittyMood: 'pet' | 'sleepy' | 'surprised' = 'pet';
+const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)]!;
 
 // ─── Clovemere — PS1 kitty state machine ──────────────────────────────
 const KITTY = {
@@ -208,8 +214,14 @@ function renderBlocks(blocks: Block[]) {
   scrollEnd();
 }
 
+// Wait one rAF so freshly-appended cards finish layout before we measure
+// scrollHeight — otherwise the smooth animation aims at a stale target and
+// gets re-corrected mid-flight, which reads as a jitter on the first long
+// output (e.g. `help`).
 function scrollEnd() {
-  term!.scrollTop = term!.scrollHeight;
+  requestAnimationFrame(() => {
+    term!.scrollTo({ top: term!.scrollHeight, behavior: 'smooth' });
+  });
 }
 
 // ─── PS1 echo for each command ────────────────────────────────────────
@@ -243,9 +255,9 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
     );
     const writing = section(
       'writing',
-      row('posts', 'list all blog posts') +
-        row('latest', 'most recent post') +
-        row('read &lt;slug&gt;', 'open a post')
+      row('post', 'list all blog posts') +
+        row('post &lt;n | slug | title&gt;', 'open a post (index, slug, or title)') +
+        row('latest', 'most recent post')
     );
     const shell = section(
       'shell',
@@ -387,13 +399,33 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
           <div class="grid grid-cols-[80px_1fr] gap-x-4 gap-y-1">
             <span class="text-accent">github</span><a href="https://github.com/voidkey">github.com/voidkey</a>
             <span class="text-accent">site</span><a href="https://nullkey.top">nullkey.top</a>
-            <span class="text-accent">email</span><a href="mailto:hi@nullkey.top">hi@nullkey.top</a>
+            <span class="text-accent">x</span><a href="https://x.com/x_nullkey">x.com/x_nullkey</a>
+            <span class="text-accent">discord</span><a href="https://discord.com/channels/nullkey">discord.com/channels/nullkey</a>
+            <span class="text-accent">telegram</span><a href="https://t.me/x_nullkey">@x_nullkey</a>
+            <span class="text-accent">email</span>eHpmbmt1QG91dGxvb2suY29t
           </div>
         </div>`,
       ],
     ];
   },
-  posts() {
+  post(args) {
+    if (args[0]) {
+      // Numeric index: `post 1` → latest post (1-based)
+      const asNum = parseInt(args[0]!, 10);
+      if (args.length === 1 && !isNaN(asNum) && asNum > 0 && asNum <= POSTS.length) {
+        return openPost(POSTS[asNum - 1]!);
+      }
+      const raw = args.join(' ').trim();
+      const { hit, matches } = fuzzyFind(POSTS, raw, (p) => [p.slug, p.title]);
+      if (matches) return ambiguousPosts(matches, raw);
+      if (!hit) {
+        return [
+          ['line', `<span class="text-err">no such post:</span> ${esc(raw)}`],
+          ['line', '<span class="text-mute">try </span><span class="text-accent">post</span><span class="text-mute"> for the full list.</span>'],
+        ];
+      }
+      return openPost(hit);
+    }
     if (POSTS.length === 0) {
       return [['line', '<span class="text-mute">no posts yet. check back soon.</span>']];
     }
@@ -411,11 +443,11 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       [
         'raw',
         `<div class="out-card text-[13px]">
-          <h5>$ posts — ${POSTS.length} entries</h5>
+          <h5>$ post — ${POSTS.length} entries</h5>
           ${rows}
         </div>`,
       ],
-      ['line', '<span class="text-mute">→ </span><span class="text-accent">read &lt;slug&gt;</span><span class="text-mute"> to open · or click a row · </span><a href="/rss.xml" class="text-accent">rss</a>'],
+      ['line', '<span class="text-mute">→ </span><span class="text-accent">post &lt;n | slug&gt;</span><span class="text-mute"> to open · or click a row · </span><a href="/rss.xml" class="text-accent">rss</a>'],
     ];
   },
   latest() {
@@ -433,29 +465,7 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
       ],
     ];
   },
-  read(args) {
-    if (args.length === 0) {
-      return [['line', '<span class="text-err">usage:</span> read &lt;slug | title | n&gt;  <span class="text-mute">(try </span><span class="text-accent">posts</span><span class="text-mute">)</span>']];
-    }
-
-    // Numeric index: `read 1` → latest post (1-based)
-    const asNum = parseInt(args[0]!, 10);
-    if (args.length === 1 && !isNaN(asNum) && asNum > 0 && asNum <= POSTS.length) {
-      return openPost(POSTS[asNum - 1]!);
-    }
-
-    const raw = args.join(' ').trim();
-    const { hit, matches } = fuzzyFind(POSTS, raw, (p) => [p.slug, p.title]);
-    if (matches) return ambiguousPosts(matches, raw);
-    if (!hit) {
-      return [
-        ['line', `<span class="text-err">no such post:</span> ${esc(raw)}`],
-        ['line', '<span class="text-mute">try </span><span class="text-accent">posts</span><span class="text-mute"> for the full list.</span>'],
-      ];
-    }
-    return openPost(hit);
-  },
-  blog() { return COMMANDS.posts!([]); },
+  blog() { return COMMANDS.post!([]); },
   date() {
     return [['line', `<span class="text-dim">${esc(new Date().toString())}</span>`]];
   },
@@ -483,7 +493,51 @@ const COMMANDS: Record<string, (args: string[]) => Block[] | void> = {
     ];
   },
   pet() {
-    return [['line', '<span class="text-mute italic">*purrs* — clovemere</span>']];
+    const now = Date.now();
+    const hour = new Date().getHours();
+    const isNight = hour >= 23 || hour < 6;
+    if (now - lastPetAt > 8000) petStreak = 0;
+    petStreak += 1;
+    lastPetAt = now;
+
+    let reaction: string;
+    let kittyMood: KittyState = 'pet';
+    if (isNight) {
+      reaction = pick([
+        '*sleepy mrrp*',
+        '*half-opens one eye, purrs anyway*',
+        '*curls tighter against your hand*',
+      ]);
+      kittyMood = 'sleepy';
+    } else if (petStreak >= 5) {
+      reaction = pick([
+        '*nips your finger* — that\'s enough, human',
+        '*flicks tail, walks two steps away*',
+        '*bites gently* okay okay okay',
+      ]);
+      kittyMood = 'surprised';
+    } else if (petStreak >= 3) {
+      reaction = pick([
+        '*flops over, exposing belly* (it\'s a trap)',
+        '*loud rumbling purr*',
+        '*kneads the air with tiny paws*',
+      ]);
+    } else if (petStreak === 2) {
+      reaction = pick([
+        '*headbutts your hand*',
+        '*chirrups happily*',
+        '*leans in*',
+      ]);
+    } else {
+      reaction = pick([
+        '*purrs*',
+        '*blinks slowly at you*',
+        '*tail does one slow swish*',
+        '*soft mrrp*',
+      ]);
+    }
+    petKittyMood = kittyMood;
+    return [['line', `<span class="text-mute italic">${reaction} — clovemere</span>`]];
   },
   theme(args) {
     let next: Theme;
@@ -535,7 +589,7 @@ function run(raw: string) {
     const result = handler(args);
     if (Array.isArray(result)) renderBlocks(result);
     else scrollEnd();
-    if (cmd === 'pet') setKitty('pet', 2000);
+    if (cmd === 'pet') setKitty(petKittyMood, petKittyMood === 'sleepy' ? 2500 : 2000);
     else if (cmd === 'theme') setKitty('surprised', 1500);
     else if (cmd !== 'clear' && cmd !== 'reset') setKitty('ok');
   } else {
@@ -598,10 +652,10 @@ input.addEventListener('keydown', (e) => {
     e.preventDefault();
     const raw = input.value;
     if (!raw) return;
-    // Context-aware: after `read `, complete against post slugs
-    const readMatch = raw.match(/^(read\s+)(.*)$/i);
-    if (readMatch) {
-      const [, head, partial] = readMatch;
+    // Context-aware: after `post `, complete against post slugs
+    const postMatch = raw.match(/^(post\s+)(.*)$/i);
+    if (postMatch) {
+      const [, head, partial] = postMatch;
       const p = (partial ?? '').toLowerCase();
       const matches = POSTS.filter((post) => post.slug.startsWith(p));
       if (matches.length === 1) {
