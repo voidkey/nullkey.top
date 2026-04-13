@@ -3,7 +3,9 @@
 <div class="flex-none px-[var(--pad,24px)] py-2 bg-gradient-to-b from-transparent to-bg" id="promptline">
   <div class="max-w-terminal mx-auto flex items-center gap-2.5 flex-nowrap">
     <span class="whitespace-nowrap flex-none text-[13px]" id="ps1">
-      <span class="text-accent" id="kitty">(=^･ω･^=)</span> <span class="text-ok">nullkey</span><span class="text-mute">@</span><span class="text-accent">home</span><span class="text-mute">:</span><span class="text-blu">~</span> <span class="text-mag">(main)</span> <span class="text-accent">❯</span>
+      <!-- kitty + path hidden on mobile to prevent overflow -->
+      <span class="hidden md:inline"><span class="text-accent" id="kitty">(=^･ω･^=)</span> </span>
+      <span class="text-ok">nullkey</span><span class="text-mute">@</span><span class="text-accent">home</span><span class="hidden md:inline"><span class="text-mute">:</span><span class="text-blu">~</span> <span class="text-mag">(main)</span></span><span class="text-accent"> ❯</span>
     </span>
     <label class="relative flex-1 min-w-0 flex items-center">
       <input
@@ -11,10 +13,11 @@
         type="text"
         autocomplete="off"
         autocapitalize="off"
+        autocorrect="off"
         spellcheck="false"
         enterkeyhint="send"
         aria-label="terminal command input"
-        class="flex-1 bg-transparent border-0 outline-none text-text font-mono text-[13px] p-0 min-w-0"
+        class="flex-1 bg-transparent border-0 outline-none text-text font-mono text-[16px] md:text-[13px] p-0 min-w-0"
         style="caret-color: transparent;"
       />
       <span class="caret" id="caret"></span>

@@ -604,9 +604,11 @@ function run(raw: string) {
 // ─── Custom caret tracking ────────────────────────────────────────────
 const ghost = document.createElement('span');
 ghost.style.cssText =
-  'position:absolute;visibility:hidden;white-space:pre;font:inherit;left:-9999px;top:0;font-family:"JetBrains Mono",monospace;font-size:13px;';
+  'position:absolute;visibility:hidden;white-space:pre;font:inherit;left:-9999px;top:0;font-family:"JetBrains Mono",monospace;';
 document.body.appendChild(ghost);
 function updateCaret() {
+  // Sync font-size with the actual input so caret stays correct at any breakpoint
+  ghost.style.fontSize = getComputedStyle(input!).fontSize;
   ghost.textContent = input!.value || '';
   const w = Math.min(ghost.offsetWidth, input!.clientWidth);
   caret!.style.transform = `translateX(${-input!.clientWidth + w}px)`;
